@@ -28,9 +28,12 @@
 ;; Sidebar Docs
 
 (defn convert-doc-result [hoogle-doc]
-  {:name (.-self hoogle-doc)
-   :ns   [:a {:href (.-location hoogle-doc)} "hoogle"]
-   :doc  (.-docs hoogle-doc)})
+  (if (nil? hoogle-doc)
+    nil
+    {:name (.-self hoogle-doc)
+     :ns   [:a {:href (.-location hoogle-doc)} "hoogle"]
+     :doc  (.-docs hoogle-doc)}))
+
 
 (defn convert-results [results]
   (map convert-doc-result results))
@@ -70,7 +73,9 @@
 (defn inline-hoogle-doc [editor results]
   (let [loc (ed/->cursor editor)
         doc (-> results first convert-doc-result)]
-    (object/raise editor :editor.doc.show! (assoc doc :loc loc))))
+    (if (nil? doc)
+        (notifos/set-msg! "No docs found" {:class "error"})
+        (object/raise editor :editor.doc.show! (assoc doc :loc loc)))))
 
 (defn haskell-inline-doc [editor]
   (let [token (-> editor find-symbol-at-cursor :string)]

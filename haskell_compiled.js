@@ -31,7 +31,11 @@ lt.plugins.haskell.hoogle__GT_wrap_handler = (function hoogle__GT_wrap_handler(h
 });
 });
 
-lt.plugins.haskell.convert_doc_result = (function convert_doc_result(hoogle_doc){return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"name","name",1017277949),hoogle_doc.self,new cljs.core.Keyword(null,"ns","ns",1013907767),new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"a","a",1013904339),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"href","href",1017115293),hoogle_doc.location], null),"hoogle"], null),new cljs.core.Keyword(null,"doc","doc",1014003882),hoogle_doc.docs], null);
+lt.plugins.haskell.convert_doc_result = (function convert_doc_result(hoogle_doc){if((hoogle_doc == null))
+{return null;
+} else
+{return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"name","name",1017277949),hoogle_doc.self,new cljs.core.Keyword(null,"ns","ns",1013907767),new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"a","a",1013904339),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"href","href",1017115293),hoogle_doc.location], null),"hoogle"], null),new cljs.core.Keyword(null,"doc","doc",1014003882),hoogle_doc.docs], null);
+}
 });
 
 lt.plugins.haskell.convert_results = (function convert_results(results){return cljs.core.map.call(null,lt.plugins.haskell.convert_doc_result,results);
@@ -66,7 +70,11 @@ lt.plugins.haskell.with_editor = (function with_editor(editor,func){return (func
 });
 });
 
-lt.plugins.haskell.inline_hoogle_doc = (function inline_hoogle_doc(editor,results){var loc = lt.objs.editor.__GT_cursor.call(null,editor);var doc = lt.plugins.haskell.convert_doc_result.call(null,cljs.core.first.call(null,results));return lt.object.raise.call(null,editor,new cljs.core.Keyword(null,"editor.doc.show!","editor.doc.show!",1417900223),cljs.core.assoc.call(null,doc,new cljs.core.Keyword(null,"loc","loc",1014011570),loc));
+lt.plugins.haskell.inline_hoogle_doc = (function inline_hoogle_doc(editor,results){var loc = lt.objs.editor.__GT_cursor.call(null,editor);var doc = lt.plugins.haskell.convert_doc_result.call(null,cljs.core.first.call(null,results));if((doc == null))
+{return lt.objs.notifos.set_msg_BANG_.call(null,"No docs found",new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",1108647146),"error"], null));
+} else
+{return lt.object.raise.call(null,editor,new cljs.core.Keyword(null,"editor.doc.show!","editor.doc.show!",1417900223),cljs.core.assoc.call(null,doc,new cljs.core.Keyword(null,"loc","loc",1014011570),loc));
+}
 });
 
 lt.plugins.haskell.haskell_inline_doc = (function haskell_inline_doc(editor){var token = new cljs.core.Keyword(null,"string","string",4416885635).cljs$core$IFn$_invoke$arity$1(lt.plugins.haskell.find_symbol_at_cursor.call(null,editor));if((token == null))
