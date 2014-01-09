@@ -21,8 +21,7 @@ lt.plugins.haskell.convert_response = (function convert_response(response){var r
 lt.plugins.haskell.handle_hoogle_response = (function handle_hoogle_response(response){return lt.object.raise.call(null,lt.plugins.doc.doc_search,new cljs.core.Keyword(null,"doc.search.results","doc.search.results",3363305624),lt.plugins.haskell.convert_response.call(null,response));
 });
 
-lt.plugins.haskell.hoogle = (function hoogle(query){var xhr = (new goog.net.XhrIo());cljs.core.println.call(null,"Hoogl google");
-goog.events.listen(xhr,"complete",lt.plugins.haskell.handle_hoogle_response);
+lt.plugins.haskell.hoogle = (function hoogle(query){var xhr = (new goog.net.XhrIo());goog.events.listen(xhr,"complete",lt.plugins.haskell.handle_hoogle_response);
 return xhr.send([cljs.core.str("http://www.haskell.org/hoogle?mode=json&count=10&start=1&hoogle="),cljs.core.str(query)].join(''));
 });
 

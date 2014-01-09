@@ -23,7 +23,6 @@
 
 (defn hoogle [query]
   (let [xhr (goog.net.XhrIo.)]
-    (println "Hoogl google")
     (events/listen xhr "complete" handle-hoogle-response)
     (.send xhr (str "http://www.haskell.org/hoogle?mode=json&count=10&start=1&hoogle=" query))))
 
