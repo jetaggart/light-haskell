@@ -70,13 +70,12 @@
 (defn inline-hoogle-doc [editor results]
   (let [loc (ed/->cursor editor)
         doc (-> results first convert-doc-result)]
-    (notifos/done-working (str "Found result: " (:loc (assoc doc :loc loc))))
     (object/raise editor :editor.doc.show! (assoc doc :loc loc))))
 
 (defn haskell-inline-doc [editor]
   (let [token (-> editor find-symbol-at-cursor :string)]
     (if (nil? token)
-        (object/raise editor :editor.doc.show! {:name "Nothing"})
+        (notifos/set-msg! "No docs found" {:class "error"})
         (hoogle token (with-editor editor inline-hoogle-doc)))))
 
 (behavior ::haskell-doc
