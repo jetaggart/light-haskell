@@ -9,7 +9,7 @@
 
 (defn convert-doc-result [hoogle-doc]
   {:name (.-self hoogle-doc)
-   :ns   (.-location hoogle-doc)
+   :ns [:a {:href (.-location hoogle-doc)} "hoogle"]
    :doc  (.-docs hoogle-doc)})
 
 (defn convert-response [response]
@@ -23,6 +23,7 @@
 
 (defn hoogle [query]
   (let [xhr (goog.net.XhrIo.)]
+    (println "Hoogl google")
     (events/listen xhr "complete" handle-hoogle-response)
     (.send xhr (str "http://www.haskell.org/hoogle?mode=json&count=10&start=1&hoogle=" query))))
 
