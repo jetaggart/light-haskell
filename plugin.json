@@ -1,7 +1,7 @@
 {"name": "Haskell",
  "version": "0.0.1",
  "author": "jetaggart",
- "source": "https://github.com/jetaggart/haskell-plugin",
+ "source": "https://github.com/jetaggart/light-haskell",
  "desc": "Haskell integration for LightTable",
  "dependencies": {
  },
