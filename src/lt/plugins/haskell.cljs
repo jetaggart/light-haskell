@@ -13,13 +13,17 @@
    :doc  (.-docs hoogle-doc)})
 
 (defn convert-response [response]
-  (let [results (-> response .-target .getResponseJson .-results)]
+  (println response)
+  (let [results (-> response .getResponseJson .-results)]
     (map convert-doc-result results)))
 
-(defn handle-hoogle-response [response]
-  (object/raise doc/doc-search
-                :doc.search.results
-                (convert-response response)))
+(defn handle-hoogle-response [event]
+  (let [response (.-target event)]
+    (if (.isSuccess response)
+      (object/raise doc/doc-search
+                    :doc.search.results
+                    (convert-response response))
+      (notifos/done-working "Failed to contact hoogle. Please try again"))))
 
 (defn hoogle [query]
   (let [xhr (goog.net.XhrIo.)]
