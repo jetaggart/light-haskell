@@ -1,0 +1,9 @@
+{"name": "Haskell",
+ "version": "0.0.1",
+ "author": "jetaggart",
+ "source": "https://github.com/jetaggart/haskell-plugin",
+ "desc": "Haskell integration for LightTable",
+ "dependencies": {
+ },
+
+ "behaviors": "haskell.behaviors"}
