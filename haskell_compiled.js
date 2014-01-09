@@ -15,15 +15,13 @@ goog.require('lt.plugins.doc');
 lt.plugins.haskell.convert_doc_result = (function convert_doc_result(hoogle_doc){return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"name","name",1017277949),hoogle_doc.self,new cljs.core.Keyword(null,"ns","ns",1013907767),hoogle_doc.location,new cljs.core.Keyword(null,"doc","doc",1014003882),hoogle_doc.docs], null);
 });
 
-lt.plugins.haskell.convert_response = (function convert_response(response){var parsed_json = response.getResponseJson();cljs.core.println.call(null,parsed_json.results);
-return cljs.core.map.call(null,lt.plugins.haskell.convert_doc_result,parsed_json.results);
+lt.plugins.haskell.convert_response = (function convert_response(response){var results = response.target.getResponseJson().results;return cljs.core.map.call(null,lt.plugins.haskell.convert_doc_result,results);
 });
 
 lt.plugins.haskell.handle_hoogle_response = (function handle_hoogle_response(response){return lt.object.raise.call(null,lt.plugins.doc.doc_search,new cljs.core.Keyword(null,"doc.search.results","doc.search.results",3363305624),lt.plugins.haskell.convert_response.call(null,response));
 });
 
-lt.plugins.haskell.hoogle = (function hoogle(query){var xhr = (new goog.net.XhrIo());goog.events.listen(xhr,"complete",(function (){return lt.object.raise.call(null,lt.plugins.doc.doc_search,new cljs.core.Keyword(null,"doc.search.results","doc.search.results",3363305624),lt.plugins.haskell.convert_response.call(null,xhr));
-}));
+lt.plugins.haskell.hoogle = (function hoogle(query){var xhr = (new goog.net.XhrIo());goog.events.listen(xhr,"complete",lt.plugins.haskell.handle_hoogle_response);
 return xhr.send([cljs.core.str("http://www.haskell.org/hoogle?mode=json&count=10&start=1&hoogle="),cljs.core.str(query)].join(''));
 });
 

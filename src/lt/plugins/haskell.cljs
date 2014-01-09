@@ -9,22 +9,21 @@
 
 (defn convert-doc-result [hoogle-doc]
   {:name (.-self hoogle-doc)
-   :ns (.-location hoogle-doc)
-   :doc (.-docs hoogle-doc)})
+   :ns   (.-location hoogle-doc)
+   :doc  (.-docs hoogle-doc)})
 
 (defn convert-response [response]
-  (let [parsed-json (-> response .getResponseJson)]
-    (println (.-results parsed-json))
-    (map convert-doc-result (.-results parsed-json))))
-
+  (let [results (-> response .-target .getResponseJson .-results)]
+    (map convert-doc-result results)))
 
 (defn handle-hoogle-response [response]
-  (object/raise doc/doc-search :doc.search.results (convert-response response)))
+  (object/raise doc/doc-search
+                :doc.search.results
+                (convert-response response)))
 
 (defn hoogle [query]
   (let [xhr (goog.net.XhrIo.)]
-    (events/listen xhr "complete" (fn []
-                                     (object/raise doc/doc-search :doc.search.results (convert-response xhr))))
+    (events/listen xhr "complete" handle-hoogle-response)
     (.send xhr (str "http://www.haskell.org/hoogle?mode=json&count=10&start=1&hoogle=" query))))
 
 (defn haskell-doc-search-exec [query]
@@ -35,4 +34,4 @@
           :triggers #{:types+}
           :reaction (fn [this cur]
                       (conj cur {:label "hs" :trigger haskell-doc-search-exec :file-types #{"Haskell"}})
-                      ))
+                    ))
