@@ -111,26 +111,26 @@
 ;; reformat code
 ;; ***********************************
 
-(behavior ::reformat-file
-          :triggers #{:editor.reformat.haskell}
-          :reaction (fn [editor]
-                      (println "sending to client")
-                      (clients/send (eval/get-client! {:command :haskell.reformat
-                                                       :info (@editor :info)
-                                                       :origin editor
-                                                       :create try-connect})
-                                    :haskell.reformat (@editor :info) :only editor)))
-
 (behavior ::reformat-file-exec
           :triggers #{:editor.reformat.haskell.exec}
           :reaction (fn [editor result]
                       (println "hello 2")))
 
+(behavior ::reformat-haskell-file
+          :triggers #{:haskell-reformat}
+          :reaction (fn [this]
+                      (let [client (eval/get-client! {:command :haskell.reformat
+                                                      :info {:hello "you"}
+                                                      :origin (pool/last-active)
+                                                      :create try-connect})]
+                        (println (@client :name))
+                        (clients/send client :haskell.reformat))))
+
 (cmd/command {:command :reformat-file
               :desc "Haskell: reformat file"
               :exec (fn []
-                      (when-let [ed (pool/last-active)]
-                        (object/raise ed :editor.reformat.haskell)))})
+                       (println "handling command")
+                      (object/raise haskell :haskell-reformat))})
 
 ;; **************************************
 ;; haskell client
@@ -160,7 +160,6 @@
           :reaction (fn [this data]
                       (println "Process exited: " data)))
 
-(println tcp/port)
 (object/object* ::connecting-notifier
                 :triggers []
                 :behaviors [::on-out ::on-error ::on-exit]
@@ -211,7 +210,6 @@
 (defn try-connect [{:keys [info]}]
   (let [path (:path info)
         client (clients/client! :haskell.client)]
-    (object/merge! client {:path path})
     (check-all {:path path
                 :client client})
     client))

@@ -16,16 +16,13 @@ main = withSocketsDo $ do
     [portStr, clientId] <- getArgs
     let port = fromIntegral (read portStr :: Int)
     handle <- connectTo "localhost" (PortNumber port)
-    let connectionData = "{\"name\":\"Haskell\", \"type\":\"haskell\", \"client-id\":" ++ clientId ++ ", \"dir\":\"/Users/pivotal\", \"tags\": [\"haskell.client\"], \"commands\": [\"haskell.reformat\"]}"
+    let connectionData = "{\"name\":\"Haskell\", \"type\":\"haskell\", \"client-id\":" ++ clientId ++ ", \"dir\":\"/Users/pivotal\", \"commands\": [\"haskell.reformat\"]}"
     hPutStrLn handle connectionData
-    hPutStrLn stdout "ready to go"
     processCommands handle
 
 processCommands :: Handle -> IO ()
 processCommands handle = do
-  putStrLn "Processing data"
   line <- hGetLine handle
-  head []
   case (decode . BS.pack $ line) of
     Just (client:_:_) -> hPutStrLn handle $ "[" ++ client ++ ", \"editor.reformat.haskell.exec\", {\"some\":\"data\"}]"
     _                 -> head []

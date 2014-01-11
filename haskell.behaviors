@@ -10,7 +10,6 @@
                    :lt.plugins.haskell/haskell-doc,
                    :lt.plugins.haskell/print-haskell-doc]
 
-  :editor [:lt.plugins.haskell/reformat-file]
-  :haskell.lang [:lt.plugins.haskell/connect]}}
+  :haskell.lang [:lt.plugins.haskell/connect :lt.plugins.haskell/reformat-haskell-file]}}
  }
 }

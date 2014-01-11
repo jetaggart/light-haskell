@@ -7,7 +7,19 @@ loop do
   puts info
 
   client.puts %{["123", "command", "hello"]}
-  client.gets
+  info = client.gets
+
+  puts info
+
+  client.puts %{["123", "command", "hello"]}
+  info = client.gets
+
+  puts info
+
+  client.puts %{["123", "command", "hello"]}
+  info = client.gets
+
+  puts info
 
   sleep(10)
   client.close
