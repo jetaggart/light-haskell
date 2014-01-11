@@ -8,6 +8,7 @@
             [lt.objs.popup :as popup]
             [lt.objs.proc :as proc]
             [lt.objs.plugins :as plugins]
+            [lt.objs.clients.tcp :as tcp]
             [lt.plugins.doc :as doc]
             [lt.objs.clients :as clients]
             [goog.events :as events]
@@ -115,25 +116,17 @@
 
 
 (def shell (load/node-module "shelljs"))
-(def harbor ((load/node-module "harbor") 49152 65000))
 (def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
-
-(defn open-port [id cb]
-  (.claim harbor
-          (str id)
-          #(cb %2)))
 
 (behavior ::on-out
           :triggers #{:proc.out}
           :reaction (fn [this data]
                       (let [out (.toString data)]
-                        (println "Got some output: " out)
                         (object/update! this [:buffer] str out)
                         (do
+                          (println "Got some output: " out)
                           (notifos/done-working)
-                          (object/merge! this {:connected true})
-                          ;(object/destroy! this)
-                          ))))
+                          (object/merge! this {:connected true})))))
 
 (behavior ::on-error
           :triggers #{:proc.error}
@@ -155,18 +148,16 @@
 
 
 (defn run-haskell [{:keys [path name client] :as info}]
-  (open-port (clients/->id client)
-             (fn [port]
-               (let [obj (object/create ::connecting-notifier info)
-                     client-id (clients/->id client)]
-                 (object/merge! client {:port port
-                                        :proc obj})
-                 (notifos/working "Connecting..")
-                 (proc/exec {:command "runhaskell"
-                             :args [lt-haskell-path port client-id]
-                             :cwd (files/parent path)
-                             :env {"HASKELL_PATH" (files/join (files/parent path))}
-                             :obj obj})))))
+  (let [obj (object/create ::connecting-notifier info)
+        client-id (clients/->id client)]
+    (object/merge! client {:port tcp/port
+                           :proc obj})
+    (notifos/working "Connecting..")
+    (proc/exec {:command "runhaskell"
+                :args [lt-haskell-path tcp/port client-id]
+                :cwd (files/parent path)
+                :env {"HASKELL_PATH" (files/join (files/parent path))}
+                :obj obj})))
 
 (defn check-haskell [obj]
   (assoc obj :haskell (.which shell "runhaskell")))

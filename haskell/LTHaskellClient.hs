@@ -8,7 +8,7 @@ main :: IO ()
 main = withSocketsDo $ do
     [portStr, clientId] <- getArgs
     let port = fromIntegral (read portStr :: Int)
-    hPutStrLn stdout "Connected"
+    hPutStrLn stdout $ "Connected on: " ++ portStr ++ " with client id: " ++ clientId
     handle <- connectTo "localhost" (PortNumber port)
     let connectionData = "{\"name\":\"Haskell\", \"type\":\"haskell\", \"client-id\":" ++ clientId ++ ", \"dir\":\"/Users/pivotal\", \"tags\": [\"haskell.client\"], \"commands\": [\"haskell.compile\"]}"
     hPutStrLn handle connectionData
