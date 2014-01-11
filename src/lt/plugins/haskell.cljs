@@ -123,9 +123,32 @@
           (str id)
           #(cb %2)))
 
+(behavior ::on-out
+          :triggers #{:proc.out}
+          :reaction (fn [this data]
+                      (let [out (.toString data)]
+                        (println "Got some output: " out)
+                        (object/update! this [:buffer] str out)
+                        (do
+                          (notifos/done-working)
+                          (object/merge! this {:connected true})
+                          ;(object/destroy! this)
+                          ))))
+
+(behavior ::on-error
+          :triggers #{:proc.error}
+          :reaction (fn [this data]
+                      (let [out (.toString data)]
+                        (println "Process errored: " out))))
+
+(behavior ::on-exit
+          :triggers #{:proc.exit}
+          :reaction (fn [this data]
+                      (println "Process exited: " data)))
+
 (object/object* ::connecting-notifier
                 :triggers []
-                :behaviors []
+                :behaviors [::on-out, ::on-error, ::on-exit]
                 :init (fn [this info]
                         (object/merge! this {:info info})
                         nil))

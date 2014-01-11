@@ -1,26 +1,21 @@
-import Network (listenOn, withSocketsDo, accept, PortID(..), Socket)
+import Network (connectTo, withSocketsDo, PortID(..))
+import Network.Socket (send, socketToHandle)
 import System.Environment (getArgs)
-import System.IO (hSetBuffering, hGetLine, hPutStrLn, BufferMode(..), Handle)
+import System.IO (hSetBuffering, hGetLine, stdout, hPutStrLn, BufferMode(..), Handle, IOMode(..))
 import Control.Concurrent (forkIO)
 
 main :: IO ()
 main = withSocketsDo $ do
-    [portStr, _] <- getArgs
+    [portStr, clientId] <- getArgs
     let port = fromIntegral (read portStr :: Int)
-    sock <- listenOn $ PortNumber port
-    putStrLn "Connected"
-    sockHandler sock
+    hPutStrLn stdout "Connected"
+    handle <- connectTo "localhost" (PortNumber port)
+    let connectionData = "{\"name\":\"Haskell\", \"type\":\"haskell\", \"client-id\":" ++ clientId ++ ", \"dir\":\"/Users/pivotal\", \"tags\": [\"haskell.client\"], \"commands\": [\"haskell.compile\"]}"
+    hPutStrLn handle connectionData
+    processCommands handle
 
-sockHandler :: Socket -> IO ()
-sockHandler sock = do
-    (handle, _, _) <- accept sock
-    hSetBuffering handle NoBuffering
-    forkIO $ commandProcessor handle
-    sockHandler sock
-
-commandProcessor :: Handle -> IO ()
-commandProcessor handle = do
-    line <- hGetLine handle
-    hPutStrLn handle line
-    commandProcessor handle
-
+processCommands :: Handle -> IO ()
+processCommands handle = do
+  line <- hGetLine handle
+  hPutStrLn handle line
+  processCommands handle
