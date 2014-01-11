@@ -116,7 +116,7 @@
 
 (def shell (load/node-module "shelljs"))
 (def harbor ((load/node-module "harbor") 49152 65000))
-(def lt-haskell-path (escape-spaces (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs")))
+(def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
 
 (defn open-port [id cb]
   (.claim harbor
@@ -134,14 +134,18 @@
 (defn run-haskell [{:keys [path name client] :as info}]
   (open-port (clients/->id client)
              (fn [port]
-               (let [obj (object/create ::connecting-notifier info)]
-                 (println port)
+               (let [obj (object/create ::connecting-notifier info)
+                     client-id (clients/->id client)]
                  (object/merge! client {:port port
                                         :proc obj})
                  (notifos/working "Connecting..")
                  (println lt-haskell-path)
+                 (println port)
+                 (println client-id)
+                 (println (files/parent path))
+                 (println plugins/*plugin-dir*)
                  (proc/exec {:command "runhaskell"
-                             :args [lt-haskell-path port (clients/->id client)]
+                             :args [lt-haskell-path port client-id]
                              :cwd (files/parent path)
                              :env {"HASKELL_PATH" (files/join (files/parent path))}
                              :obj obj})))))

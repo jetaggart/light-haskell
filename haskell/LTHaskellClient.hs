@@ -8,6 +8,7 @@ main = withSocketsDo $ do
     [portStr, _] <- getArgs
     let port = fromIntegral (read portStr :: Int)
     sock <- listenOn $ PortNumber port
+    putStrLn "Connected"
     sockHandler sock
 
 sockHandler :: Socket -> IO ()
