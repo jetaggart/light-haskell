@@ -113,8 +113,18 @@
 
 (behavior ::reformat-file
           :triggers #{:editor.reformat.haskell}
-          :reaction (fn [ed]
-                      (println "got here 1")))
+          :reaction (fn [editor]
+                      (println "sending to client")
+                      (clients/send (eval/get-client! {:command :haskell.reformat
+                                                       :info (@editor :info)
+                                                       :origin editor
+                                                       :create try-connect})
+                                    :haskell.reformat (@editor :info) :only editor)))
+
+(behavior ::reformat-file-exec
+          :triggers #{:editor.reformat.haskell.exec}
+          :reaction (fn [editor result]
+                      (println "hello 2")))
 
 (cmd/command {:command :reformat-file
               :desc "Haskell: reformat file"
@@ -125,12 +135,6 @@
 ;; **************************************
 ;; haskell client
 ;; **************************************
-
-(defn escape-spaces [s]
-  (if (= files/separator "\\")
-    (str "\"" s "\"")
-    s))
-
 
 (def shell (load/node-module "shelljs"))
 (def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
@@ -156,9 +160,10 @@
           :reaction (fn [this data]
                       (println "Process exited: " data)))
 
+(println tcp/port)
 (object/object* ::connecting-notifier
                 :triggers []
-                :behaviors [::on-out, ::on-error, ::on-exit]
+                :behaviors [::on-out ::on-error ::on-exit]
                 :init (fn [this info]
                         (object/merge! this {:info info})
                         nil))

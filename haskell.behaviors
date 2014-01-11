@@ -5,6 +5,8 @@
   :sidebar.docs.search [:lt.plugins.haskell/haskell-doc-search]
 
   :editor.haskell [(:lt.object/add-tag :docable)
+                   [:lt.object/add-tag :watchable]
+                   :lt.plugins.haskell/reformat-file-exec
                    :lt.plugins.haskell/haskell-doc,
                    :lt.plugins.haskell/print-haskell-doc]
 
