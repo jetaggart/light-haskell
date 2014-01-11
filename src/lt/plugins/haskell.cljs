@@ -2,12 +2,15 @@
   (:require [lt.objs.notifos :as notifos]
             [lt.object :as object]
             [lt.objs.editor :as ed]
+            [lt.objs.command :as cmd]
             [lt.objs.files :as files]
             [lt.objs.sidebar.clients :as scl]
+            [lt.objs.eval :as eval]
             [lt.objs.dialogs :as dialogs]
             [lt.objs.popup :as popup]
             [lt.objs.proc :as proc]
             [lt.objs.plugins :as plugins]
+            [lt.objs.editor.pool :as pool]
             [lt.objs.clients.tcp :as tcp]
             [lt.plugins.doc :as doc]
             [lt.objs.clients :as clients]
@@ -104,6 +107,20 @@
           :triggers #{:editor.doc}
           :reaction haskell-inline-doc)
 
+;; ***********************************
+;; reformat code
+;; ***********************************
+
+(behavior ::reformat-file
+          :triggers #{:editor.reformat.haskell}
+          :reaction (fn [ed]
+                      (println "got here 1")))
+
+(cmd/command {:command :reformat-file
+              :desc "Haskell: reformat file"
+              :exec (fn []
+                      (when-let [ed (pool/last-active)]
+                        (object/raise ed :editor.reformat.haskell)))})
 
 ;; **************************************
 ;; haskell client
