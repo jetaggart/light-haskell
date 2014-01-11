@@ -21,18 +21,6 @@ sockHandler sock = do
 commandProcessor :: Handle -> IO ()
 commandProcessor handle = do
     line <- hGetLine handle
-    let cmd = words line
-    case (head cmd) of
-        ("echo") -> echoCommand handle cmd
-        ("add") -> addCommand handle cmd
-        _ -> do hPutStrLn handle "Unknown command"
+    hPutStrLn handle line
     commandProcessor handle
-
-echoCommand :: Handle -> [String] -> IO ()
-echoCommand handle cmd = do
-    hPutStrLn handle (unwords $ tail cmd)
-
-addCommand :: Handle -> [String] -> IO ()
-addCommand handle cmd = do
-    hPutStrLn handle $ show $ (read $ cmd !! 1) + (read $ cmd !! 2)
 
