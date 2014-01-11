@@ -139,11 +139,6 @@
                  (object/merge! client {:port port
                                         :proc obj})
                  (notifos/working "Connecting..")
-                 (println lt-haskell-path)
-                 (println port)
-                 (println client-id)
-                 (println (files/parent path))
-                 (println plugins/*plugin-dir*)
                  (proc/exec {:command "runhaskell"
                              :args [lt-haskell-path port client-id]
                              :cwd (files/parent path)
