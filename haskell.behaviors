@@ -1,10 +1,13 @@
 {:+
  {:app [(:lt.objs.plugins/load-js ["codemirror/haskell-mode.js", "haskell_compiled.js"])]
   :files [(:lt.objs.files/file-types [{:name "Haskell" :exts [:hs, :lhs] :mime "text/x-haskell" :tags [:editor.haskell]} ])]
+
   :sidebar.docs.search [:lt.plugins.haskell/haskell-doc-search]
 
   :editor.haskell [(:lt.object/add-tag :docable)
                    :lt.plugins.haskell/haskell-doc,
                    :lt.plugins.haskell/print-haskell-doc]
+
+  :haskell.lang [:lt.plugins.haskell/connect]}}
  }
 }

@@ -2,11 +2,21 @@
   (:require [lt.objs.notifos :as notifos]
             [lt.object :as object]
             [lt.objs.editor :as ed]
+            [lt.objs.files :as files]
+            [lt.objs.sidebar.clients :as scl]
+            [lt.objs.dialogs :as dialogs]
+            [lt.objs.plugins :as plugins]
             [lt.plugins.doc :as doc]
+            [lt.objs.clients :as clients]
             [goog.events :as events]
+            [lt.util.load :as load]
             [lt.util.dom :as dom])
 
   (:require-macros [lt.macros :refer [behavior]]))
+
+;; **************************************
+;; Hoogle
+;; **************************************
 
 (def hoogle->url "http://www.haskell.org/hoogle?mode=json&count=10&start=1&hoogle=")
 
@@ -25,7 +35,9 @@
           (handler (hoogle->parse response))
           (notifos/done-working "Failed to connect to hoogle. Try again")))))
 
+;; **************************************
 ;; Sidebar Docs
+;; **************************************
 
 (defn convert-doc-result [hoogle-doc]
   (if (nil? hoogle-doc)
@@ -52,7 +64,9 @@
           :triggers #{:types+}
           :reaction haskell-doc-search)
 
+;; **************************************
 ;; Inline doc search
+;; **************************************
 
 (defn symbol-token? [s]
   (re-seq #"[\w\$_\-\.\*\+\/\?\><!]" s))
@@ -86,3 +100,98 @@
 (behavior ::haskell-doc
           :triggers #{:editor.doc}
           :reaction haskell-inline-doc)
+
+
+;; **************************************
+;; haskell client
+;; **************************************
+
+(defn escape-spaces [s]
+  (if (= files/separator "\\")
+    (str "\"" s "\"")
+    s))
+
+
+(def shell (load/node-module "shelljs"))
+(def harbor ((load/node-module "harbor") 49152 65000))
+(def lt-haskell-path (escape-spaces (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs")))
+
+(defn open-port [id cb]
+  (.claim harbor
+          (str id)
+          #(cb %2)))
+
+(object/object* ::connecting-notifier
+                :triggers []
+                :behaviors []
+                :init (fn [this info]
+                        (object/merge! this {:info info})
+                        nil))
+
+
+(defn try-connect [{:keys [info]}]
+  (let [path (:path info)
+        client (clients/client! :haskell.client)]
+    (check-all {:path path
+                :client client})
+    client))
+
+
+(defn run-haskell [{:keys [path name client] :as info}]
+  (open-port (clients/->id client)
+             (fn [port]
+               (let [obj (object/create ::connecting-notifier info)]
+                 (println client)
+                 (object/merge! client {:port port
+                                        :proc obj})
+                 (notifos/working "Connecting..")
+                 (proc/exec {:command "runhaskell"
+                             :args [lt-haskell-path tcp/port (clients/->id client)]
+                             :cwd (files/parent path)
+                             :env {"HASKELL_PATH" (files/join (files/parent path))}
+                             :obj obj})
+                 ))))
+
+(defn check-haskell [_]
+  (assoc obj :haskell (.which shell "runhaskell")))
+
+(defn check-client [obj]
+  (assoc obj :haskell-client (files/exists? lt-haskell-path)))
+
+(defn handle-no-haskell []
+  (clients/rem! client)
+  (popup/popup! {:header "We couldn't find runhaskell."
+                 :body "In order to start a haskell client, you have to have the haskell and haskell-platform installed and on your system's PATH."
+                 :buttons [{:label "Download Haskell Platform"
+                            :action (fn []
+                                      (platform/open "http://www.haskell.org/platform/"))}
+                           {:label "ok"}]}))
+(defn notify [obj]
+  (let [{:keys [haskell path client]} obj]
+    (cond
+     (or (not haskell) (empty? haskell)) (handle-no-haskell)
+     :else (run-haskell obj))
+    obj))
+
+(defn check-all [obj]
+  (-> obj
+      (check-haskell)
+      (check-client)
+      (notify)))
+
+(behavior ::connect
+          :triggers #{:connect}
+          :reaction (fn [this path]
+                      (println "This is trying to connect")
+                      (try-connect {:info {:path path}})))
+
+
+(object/object* ::haskell-lang
+                :tags #{:haskell.lang})
+
+(def haskell (object/create ::haskell-lang))
+
+(scl/add-connector {:name "Haskell"
+                    :desc "Select a directory to serve as the root of your haskell project."
+                    :connect (fn []
+                               (dialogs/dir haskell :connect))})
