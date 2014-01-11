@@ -5,7 +5,7 @@ import Control.Concurrent (forkIO)
 
 main :: IO ()
 main = withSocketsDo $ do
-    [portStr] <- getArgs
+    [portStr, _] <- getArgs
     let port = fromIntegral (read portStr :: Int)
     sock <- listenOn $ PortNumber port
     sockHandler sock

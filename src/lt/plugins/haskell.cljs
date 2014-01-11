@@ -5,6 +5,8 @@
             [lt.objs.files :as files]
             [lt.objs.sidebar.clients :as scl]
             [lt.objs.dialogs :as dialogs]
+            [lt.objs.popup :as popup]
+            [lt.objs.proc :as proc]
             [lt.objs.plugins :as plugins]
             [lt.plugins.doc :as doc]
             [lt.objs.clients :as clients]
@@ -129,36 +131,28 @@
                         nil))
 
 
-(defn try-connect [{:keys [info]}]
-  (let [path (:path info)
-        client (clients/client! :haskell.client)]
-    (check-all {:path path
-                :client client})
-    client))
-
-
 (defn run-haskell [{:keys [path name client] :as info}]
   (open-port (clients/->id client)
              (fn [port]
                (let [obj (object/create ::connecting-notifier info)]
-                 (println client)
+                 (println port)
                  (object/merge! client {:port port
                                         :proc obj})
                  (notifos/working "Connecting..")
+                 (println lt-haskell-path)
                  (proc/exec {:command "runhaskell"
-                             :args [lt-haskell-path tcp/port (clients/->id client)]
+                             :args [lt-haskell-path port (clients/->id client)]
                              :cwd (files/parent path)
                              :env {"HASKELL_PATH" (files/join (files/parent path))}
-                             :obj obj})
-                 ))))
+                             :obj obj})))))
 
-(defn check-haskell [_]
+(defn check-haskell [obj]
   (assoc obj :haskell (.which shell "runhaskell")))
 
 (defn check-client [obj]
   (assoc obj :haskell-client (files/exists? lt-haskell-path)))
 
-(defn handle-no-haskell []
+(defn handle-no-haskell [client]
   (clients/rem! client)
   (popup/popup! {:header "We couldn't find runhaskell."
                  :body "In order to start a haskell client, you have to have the haskell and haskell-platform installed and on your system's PATH."
@@ -169,7 +163,7 @@
 (defn notify [obj]
   (let [{:keys [haskell path client]} obj]
     (cond
-     (or (not haskell) (empty? haskell)) (handle-no-haskell)
+     (or (not haskell) (empty? haskell)) (handle-no-haskell client)
      :else (run-haskell obj))
     obj))
 
@@ -179,10 +173,17 @@
       (check-client)
       (notify)))
 
+(defn try-connect [{:keys [info]}]
+  (let [path (:path info)
+        client (clients/client! :haskell.client)]
+    (object/merge! client {:path path})
+    (check-all {:path path
+                :client client})
+    client))
+
 (behavior ::connect
           :triggers #{:connect}
           :reaction (fn [this path]
-                      (println "This is trying to connect")
                       (try-connect {:info {:path path}})))
 
 
