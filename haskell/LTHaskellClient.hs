@@ -41,7 +41,8 @@ instance ToJSON Connection where
            ]
 
 connectionResponse :: String -> String
-connectionResponse clientId = BS.unpack . encode $ Connection "Haskell" "haskell" clientId "/Users/pivotal" ["haskell.reformat"]
+connectionResponse clientId = BS.unpack . encode $
+  Connection "Haskell" "haskell" clientId "/Users/pivotal" ["haskell.reformat"]
 
 main :: IO ()
 main = withSocketsDo $ do
@@ -62,5 +63,6 @@ processCommands handle = do
 --                                   -> head []
   processCommands handle
 
-parseCommand :: BS.ByteString -> Either String LTData
-parseCommand = eitherDecode
+  where
+    parseCommand :: BS.ByteString -> Either String LTData
+    parseCommand = eitherDecode
