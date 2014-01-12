@@ -9,18 +9,14 @@ loop do
   client.puts %{["123", "command", {"code": "stuff to reformat"}]}
   info = client.gets
 
+  puts "Should succeed"
   puts info
 
   client.puts %{["123", "command", "hello"]}
   info = client.gets
 
+  puts "Should fail"
   puts info
 
-  client.puts %{["123", "command", "hello"]}
-  info = client.gets
-
-  puts info
-
-  sleep(10)
   client.close
 end
