@@ -26,14 +26,14 @@ instance ToJSON LTData
 instance FromJSON LTPayload
 instance ToJSON LTPayload
 
-data Connection = Connection { cName :: String
-                             , cType :: String
-                             , cClientId :: String
-                             , cDir :: String
-                             , cCommands :: [String]
-                             } deriving (Show)
+data LTConnection = LTConnection { cName :: String
+                                 , cType :: String
+                                 , cClientId :: String
+                                 , cDir :: String
+                                 , cCommands :: [String]
+                                 } deriving (Show)
 
-instance ToJSON Connection where
+instance ToJSON LTConnection where
   toJSON connection =
     object [ "name" .= cName connection
            , "type" .= cType connection
@@ -47,7 +47,7 @@ main = withSocketsDo $ do
     [portStr, clientId] <- getArgs
     let port = fromIntegral (read portStr :: Int)
     handle <- connectTo "localhost" (PortNumber port)
-    sendResponse handle $ Connection "Haskell" "haskell" clientId "" ["haskell.reformat"]
+    sendResponse handle $ LTConnection "Haskell" "haskell" clientId "" ["haskell.reformat"]
     processCommands clientId handle
 
 
