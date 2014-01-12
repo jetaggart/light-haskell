@@ -62,13 +62,12 @@ processCommands :: Int -> Handle -> IO ()
 processCommands clientId handle = do
   line <- hGetLine handle
 
-  hPutStrLn stdout $ ("Trying to respond: " ++) $ BS.unpack . encode $ LTData (clientId, "editor.haskell.reformat.exec", LTPayload "New source code")
-  hFlush stdout
-
   case (parseCommand line) of
     Left error -> hPutStrLn stderr line
-    Right _ -> do
-      sendResponse handle $ LTData (clientId, "editor.reformat.haskell.exec", LTPayload "New source code")
+    Right (LTData (cId, _, _)) -> do
+      hPutStrLn stdout $ ("Trying to respond: " ++) $ BS.unpack . encode $ LTData (cId, "editor.haskell.reformat.exec", LTPayload "New source code")
+      hFlush stdout
+      sendResponse handle $ LTData (cId, "editor.reformat.haskell.exec", LTPayload "New source code")
 
   processCommands clientId handle
 
