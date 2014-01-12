@@ -1,4 +1,4 @@
-This is a Haskell plugin for LightTable
+Haskell plugin for LightTable
 ===
 
 Currently it supports:
