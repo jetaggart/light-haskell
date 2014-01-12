@@ -6,7 +6,7 @@ loop do
   info = client.gets
   puts info
 
-  client.puts %{[456, "command", {"code": "stuff to reformat"}]}
+  client.puts %{[456, "command", {"result": "stuff to reformat"}]}
   info = client.gets
 
   puts "Should succeed"

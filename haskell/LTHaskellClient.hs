@@ -3,7 +3,7 @@
 import Network (connectTo, withSocketsDo, PortID(..))
 import Network.Socket (send, socketToHandle)
 import System.Environment (getArgs)
-import System.IO (hSetBuffering, stdout, hFlush, hGetLine, stderr, hPutStrLn, BufferMode(..), Handle, IOMode(..))
+import System.IO (hSetBuffering, stdout, hFlush, hPutStr, hGetLine, stderr, hPutStrLn, BufferMode(..), Handle, IOMode(..))
 import System.Directory (getCurrentDirectory)
 import Control.Concurrent (forkIO)
 
@@ -65,9 +65,7 @@ processCommands clientId handle = do
   case (parseCommand line) of
     Left error -> hPutStrLn stderr line
     Right (LTData (cId, _, _)) -> do
-      hPutStrLn stdout $ ("Trying to respond: " ++) $ BS.unpack . encode $ LTData (cId, "editor.haskell.reformat.exec", LTPayload "New source code")
-      hFlush stdout
-      sendResponse handle $ LTData (cId, "editor.reformat.haskell.exec", LTPayload "New source code")
+      sendResponse handle $ LTData (cId, "editor.haskell.reformat.exec", LTPayload "New source code")
 
   processCommands clientId handle
 
@@ -76,4 +74,4 @@ processCommands clientId handle = do
     parseCommand = eitherDecode . BS.pack
 
 sendResponse :: (ToJSON a) => Handle -> a -> IO ()
-sendResponse handle = hPutStrLn handle . BS.unpack . encode
+sendResponse handle payload = (hPutStr handle . BS.unpack . encode) payload >> hPutStr handle "\n"

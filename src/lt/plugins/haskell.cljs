@@ -116,13 +116,9 @@
           :reaction (fn [editor result]
                       (println "hello 2")))
 
-(object/raise (first (object/by-tag :editor.haskell)) :editor.haskell.reformat.exec)
-(object/raise (pool/last-active) :haskell-reformat-file)
-
 (behavior ::haskell-reformat-file
           :triggers #{:haskell.reformat.file}
           :reaction (fn [editor]
-                      (println "in the haskell object event")
                       (object/raise haskell :haskell.send.reformat.file {:origin editor})))
 
 (behavior ::haskell-send-reformat-file
@@ -131,7 +127,6 @@
                       (let [{:keys [info origin]} event
                                     client (-> @origin :client :default)]
                               (notifos/working "")
-                              (println "sending to haskell")
                               (clients/send (eval/get-client! {:command :haskell.reformat
                                                                :origin origin
                                                                :info info
@@ -156,12 +151,8 @@
           :reaction (fn [this data]
                       (let [out (.toString data)]
                         (object/update! this [:buffer] str out)
-                        (println "*******")
-                        (println out)
-                        (println "*******")
                         (when (> (.indexOf out "Connected") -1)
                           (do
-                            (println "Connected to LT")
                             (notifos/done-working)
                             (object/merge! this {:connected true}))))))
 
@@ -188,7 +179,6 @@
 (defn run-haskell [{:keys [path name client] :as info}]
   (let [obj (object/create ::connecting-notifier info)
         client-id (clients/->id client)]
-    (println "generated client id: " client-id)
     (object/merge! client {:port tcp/port
                            :proc obj})
     (notifos/working "Connecting..")
