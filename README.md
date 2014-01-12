@@ -5,6 +5,8 @@ Currently it supports:
 * Hoogling via `ctrl-shift-d`
 * Hoogling inline via `ctrl-d`
 
+Working on:
+* TCP client (working) that implements ghc-mod features (not done)
 
 License
 ===
