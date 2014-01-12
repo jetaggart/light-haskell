@@ -62,7 +62,7 @@ processCommands :: Int -> Handle -> IO ()
 processCommands clientId handle = do
   line <- hGetLine handle
 
-  hPutStrLn stdout $ ("Trying to respond: " ++) $ BS.unpack . encode $ LTData (clientId, "editor.reformat.haskell.exec", LTPayload "New source code")
+  hPutStrLn stdout $ ("Trying to respond: " ++) $ BS.unpack . encode $ LTData (clientId, "editor.haskell.reformat.exec", LTPayload "New source code")
   hFlush stdout
 
   case (parseCommand line) of

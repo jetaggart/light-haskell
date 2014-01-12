@@ -112,10 +112,11 @@
 ;; ***********************************
 
 (behavior ::editor-reformat-file-exec
-          :triggers #{:editor.reformat.haskell.exec}
+          :triggers #{:editor.haskell.reformat.exec}
           :reaction (fn [editor result]
                       (println "hello 2")))
 
+(object/raise (first (object/by-tag :editor.haskell)) :editor.haskell.reformat.exec)
 (object/raise (pool/last-active) :haskell-reformat-file)
 
 (behavior ::haskell-reformat-file
@@ -160,6 +161,7 @@
                         (println "*******")
                         (when (> (.indexOf out "Connected") -1)
                           (do
+                            (println "Connected to LT")
                             (notifos/done-working)
                             (object/merge! this {:connected true}))))))
 
