@@ -111,24 +111,37 @@
 ;; reformat code
 ;; ***********************************
 
-(behavior ::reformat-file-exec
+(behavior ::editor-reformat-file-exec
           :triggers #{:editor.reformat.haskell.exec}
           :reaction (fn [editor result]
                       (println "hello 2")))
 
-(behavior ::reformat-haskell-file
-          :triggers #{:haskell-reformat}
-          :reaction (fn [this]
-                      (let [client (eval/get-client! {:command :haskell.reformat
-                                                      :info {:hello "you"}
-                                                      :origin (pool/last-active)
-                                                      :create try-connect})]
-                        (clients/send client :haskell.reformat {:stuff "sending"}))))
+(object/raise (pool/last-active) :haskell-reformat-file)
+
+(behavior ::haskell-reformat-file
+          :triggers #{:haskell.reformat.file}
+          :reaction (fn [editor]
+                      (println "in the haskell object event")
+                      (object/raise haskell :haskell.send.reformat.file {:origin editor})))
+
+(behavior ::haskell-send-reformat-file
+          :triggers #{:haskell.send.reformat.file}
+          :reaction (fn [this event]
+                      (let [{:keys [info origin]} event
+                                    client (-> @origin :client :default)]
+                              (notifos/working "")
+                              (println "sending to haskell")
+                              (clients/send (eval/get-client! {:command :haskell.reformat
+                                                               :origin origin
+                                                               :info info
+                                                               :create try-connect})
+                                            :haskell.reformat {:code "code to send"} :only origin))))
 
 (cmd/command {:command :reformat-file
               :desc "Haskell: reformat file"
               :exec (fn []
-                      (object/raise haskell :haskell-reformat))})
+                      (when-let [ed (pool/last-active)]
+                        (object/raise ed :haskell.reformat.file)))})
 
 ;; **************************************
 ;; haskell client
@@ -142,10 +155,14 @@
           :reaction (fn [this data]
                       (let [out (.toString data)]
                         (object/update! this [:buffer] str out)
-                        (do
-                          (println "Got some output: " out)
-                          (notifos/done-working)
-                          (object/merge! this {:connected true})))))
+                        (println "*******")
+                        (println out)
+                        (println "*******")
+                        (when (> (.indexOf out "Connected") -1)
+                          (do
+                            (notifos/done-working)
+                            (object/merge! this {:connected true}))))))
+
 
 (behavior ::on-error
           :triggers #{:proc.error}
@@ -169,6 +186,7 @@
 (defn run-haskell [{:keys [path name client] :as info}]
   (let [obj (object/create ::connecting-notifier info)
         client-id (clients/->id client)]
+    (println "generated client id: " client-id)
     (object/merge! client {:port tcp/port
                            :proc obj})
     (notifos/working "Connecting..")

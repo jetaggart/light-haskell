@@ -1,15 +1,17 @@
 {:+
  {:app [(:lt.objs.plugins/load-js ["codemirror/haskell-mode.js", "haskell_compiled.js"])]
-  :files [(:lt.objs.files/file-types [{:name "Haskell" :exts [:hs, :lhs] :mime "text/x-haskell" :tags [:editor.haskell]} ])]
 
   :sidebar.docs.search [:lt.plugins.haskell/haskell-doc-search]
 
-  :editor.haskell [(:lt.object/add-tag :docable)
-                   [:lt.object/add-tag :watchable]
-                   :lt.plugins.haskell/reformat-file-exec
-                   :lt.plugins.haskell/haskell-doc,
-                   :lt.plugins.haskell/print-haskell-doc]
+  :editor.haskell [:lt.plugins.haskell/haskell-doc
+                   :lt.plugins.haskell/haskell-reformat-file
+                   :lt.plugins.haskell/editor-reformat-file-exec
+                   [:lt.object/add-tag :docable]
+                   [:lt.object/add-tag :watchable]]
 
-  :haskell.lang [:lt.plugins.haskell/connect :lt.plugins.haskell/reformat-haskell-file]}}
+  :files [(:lt.objs.files/file-types [{:name "Haskell" :exts [:hs, :lhs] :mime "text/x-haskell" :tags [:editor.haskell]} ])]
+
+  :haskell.lang [:lt.plugins.haskell/connect
+                 :lt.plugins.haskell/haskell-send-reformat-file]}}
  }
 }

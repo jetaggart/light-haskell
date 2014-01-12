@@ -6,7 +6,7 @@ Currently it supports:
 * Hoogling inline via `ctrl-d`
 
 Working on:
-* TCP client (working) that implements ghc-mod features (not done)
+* TCP client (working) that implements ghc-mod features (not working)
 
 Requirements
 ===
