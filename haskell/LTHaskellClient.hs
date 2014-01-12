@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 
 import Network (connectTo, withSocketsDo, PortID(..))
 import Network.Socket (send, socketToHandle)
@@ -6,10 +6,21 @@ import System.Environment (getArgs)
 import System.IO (hSetBuffering, stdout, hGetLine, stderr, hPutStrLn, BufferMode(..), Handle, IOMode(..))
 import Control.Concurrent (forkIO)
 
-import Data.Aeson ((.:), (.:?), decode, FromJSON(..), Value(..))
+import Data.Aeson ((.:), (.:?), eitherDecode, FromJSON(..), Value(..))
 import Control.Exception (throw)
 import Control.Applicative ((<$>), (<*>))
+import Data.Text (Text)
 import qualified Data.ByteString.Lazy.Char8 as BS
+
+import GHC.Generics (Generic)
+
+data LTPayload = LTPayload { code :: String } deriving (Show, Generic)
+data LTData = LTData (String, String, LTPayload) deriving (Show, Generic)
+
+processPayload o = LTPayload <$> (o .: "code")
+
+instance FromJSON LTData
+instance FromJSON LTPayload
 
 main :: IO ()
 main = withSocketsDo $ do
@@ -23,10 +34,13 @@ main = withSocketsDo $ do
 processCommands :: Handle -> IO ()
 processCommands handle = do
   line <- hGetLine handle
-  case (decode . BS.pack $ line) of
-    Just (client:_:_) -> hPutStrLn handle $ "[" ++ client ++ ", \"editor.reformat.haskell.exec\", {\"some\":\"data\"}]"
-    _                 -> head []
+  case (parseCommand . BS.pack $ line) of
+    Left error -> hPutStrLn stderr error
+    Right _ -> hPutStrLn handle "success"
+--  case (decode . BS.pack $ line) of
+--    Just (client:command:payload) -> hPutStrLn handle $ "[" ++ client ++ ", \"editor.reformat.haskell.exec\", {\"some\":\"data\"}]"
+--                                   -> head []
   processCommands handle
 
-parseCommand :: BS.ByteString -> Maybe [String]
-parseCommand = decode
+parseCommand :: BS.ByteString -> Either String LTData
+parseCommand = eitherDecode

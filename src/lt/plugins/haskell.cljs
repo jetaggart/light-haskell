@@ -123,13 +123,11 @@
                                                       :info {:hello "you"}
                                                       :origin (pool/last-active)
                                                       :create try-connect})]
-                        (println (@client :name))
-                        (clients/send client :haskell.reformat))))
+                        (clients/send client :haskell.reformat {:stuff "sending"}))))
 
 (cmd/command {:command :reformat-file
               :desc "Haskell: reformat file"
               :exec (fn []
-                       (println "handling command")
                       (object/raise haskell :haskell-reformat))})
 
 ;; **************************************
