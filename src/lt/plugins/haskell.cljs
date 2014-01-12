@@ -48,9 +48,12 @@
 (defn convert-doc-result [hoogle-doc]
   (if (nil? hoogle-doc)
     nil
+    (let [location (.-location hoogle-doc)
+          [_ doc-package doc-raw-module] (.exec #"http://hackage.haskell.org/packages/archive/(.+)/latest/doc/html/(.+).html" location)
+          doc-module (.replace doc-raw-module "-" ".")]
     {:name (.-self hoogle-doc)
-     :ns   [:a {:href (.-location hoogle-doc)} "hoogle"]
-     :doc  (.-docs hoogle-doc)}))
+     :ns   [:a {:href location} (str "Hoogle (" doc-package ": " doc-module ")")]
+     :doc  (.-docs hoogle-doc)})))
 
 
 (defn convert-results [results]
