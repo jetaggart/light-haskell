@@ -40,9 +40,6 @@ instance ToJSON Connection where
            , "commands" .= cCommands connection
            ]
 
-connectionResponse :: String -> String
-connectionResponse clientId = BS.unpack . encode $
-  Connection "Haskell" "haskell" clientId "/Users/pivotal" ["haskell.reformat"]
 
 main :: IO ()
 main = withSocketsDo $ do
@@ -52,15 +49,19 @@ main = withSocketsDo $ do
     hPutStrLn handle $ connectionResponse clientId
     processCommands handle
 
+    where
+      connectionResponse :: String -> String
+      connectionResponse clientId = BS.unpack . encode $
+        Connection "Haskell" "haskell" clientId "" ["haskell.reformat"]
+
+
 processCommands :: Handle -> IO ()
 processCommands handle = do
   line <- hGetLine handle
   case (parseCommand . BS.pack $ line) of
+--  "[" ++ client ++ ", \"editor.reformat.haskell.exec\", {\"some\":\"data\"}]"
     Left error -> hPutStrLn handle error
     Right _ -> hPutStrLn handle "success"
---  case (decode . BS.pack $ line) of
---    Just (client:command:payload) -> hPutStrLn handle $ "[" ++ client ++ ", \"editor.reformat.haskell.exec\", {\"some\":\"data\"}]"
---                                   -> head []
   processCommands handle
 
   where
