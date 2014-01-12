@@ -22,7 +22,9 @@ type Command = String
 data LTData = LTData (Client, Command, LTPayload) deriving (Show, Generic)
 
 instance FromJSON LTData
+instance ToJSON LTData
 instance FromJSON LTPayload
+instance ToJSON LTPayload
 
 data Connection = Connection { cName :: String
                              , cType :: String
@@ -40,30 +42,26 @@ instance ToJSON Connection where
            , "commands" .= cCommands connection
            ]
 
-
 main :: IO ()
 main = withSocketsDo $ do
     [portStr, clientId] <- getArgs
     let port = fromIntegral (read portStr :: Int)
     handle <- connectTo "localhost" (PortNumber port)
-    hPutStrLn handle $ connectionResponse clientId
-    processCommands handle
-
-    where
-      connectionResponse :: String -> String
-      connectionResponse clientId = BS.unpack . encode $
-        Connection "Haskell" "haskell" clientId "" ["haskell.reformat"]
+    sendResponse handle $ Connection "Haskell" "haskell" clientId "" ["haskell.reformat"]
+    processCommands clientId handle
 
 
-processCommands :: Handle -> IO ()
-processCommands handle = do
+processCommands :: String -> Handle -> IO ()
+processCommands clientId handle = do
   line <- hGetLine handle
-  case (parseCommand . BS.pack $ line) of
---  "[" ++ client ++ ", \"editor.reformat.haskell.exec\", {\"some\":\"data\"}]"
+  case (parseCommand line) of
     Left error -> hPutStrLn handle error
-    Right _ -> hPutStrLn handle "success"
-  processCommands handle
+    Right _ -> sendResponse handle $ LTData (clientId, "editor.reformat.haskell.exec", LTPayload "New source code")
+  processCommands clientId handle
 
   where
-    parseCommand :: BS.ByteString -> Either String LTData
-    parseCommand = eitherDecode
+    parseCommand :: String -> Either String LTData
+    parseCommand = eitherDecode . BS.pack
+
+sendResponse :: (ToJSON a) => Handle -> a -> IO ()
+sendResponse handle = hPutStrLn handle . BS.unpack . encode
