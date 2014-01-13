@@ -116,7 +116,7 @@
 (behavior ::editor-reformat-file-result
           :triggers #{:editor.haskell.reformat.result}
           :reaction (fn [editor result]
-                      (replace-buffer (:code result))))
+                      (replace-buffer (:data result))))
 
 (behavior ::haskell-reformat-file
           :triggers #{:haskell.reformat.file}
