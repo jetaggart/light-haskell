@@ -111,10 +111,10 @@
 ;; reformat code
 ;; ***********************************
 
-(behavior ::editor-reformat-file-exec
-          :triggers #{:editor.haskell.reformat.exec}
+(behavior ::editor-reformat-file-result
+          :triggers #{:editor.haskell.reformat.result}
           :reaction (fn [editor result]
-                      (println "hello 2")))
+                      (replace-buffer (:code result))))
 
 (behavior ::haskell-reformat-file
           :triggers #{:haskell.reformat.file}
@@ -131,7 +131,7 @@
                                                                :origin origin
                                                                :info info
                                                                :create try-connect})
-                                            :haskell.reformat {:code "code to send"} :only origin))))
+                                            :haskell.reformat {:code (current-buffer-content)} :only origin))))
 
 (cmd/command {:command :reformat-file
               :desc "Haskell: reformat file"
@@ -151,6 +151,9 @@
           :reaction (fn [this data]
                       (let [out (.toString data)]
                         (object/update! this [:buffer] str out)
+                        ;;(println "********")
+                        ;;(println out)
+                        ;;(println "********")
                         (when (> (.indexOf out "Connected") -1)
                           (do
                             (notifos/done-working)
@@ -237,3 +240,19 @@
                     :desc "Select a directory to serve as the root of your haskell project."
                     :connect (fn []
                                (dialogs/dir haskell :connect))})
+
+;; ****************************
+;; Util
+;; ****************************
+
+(defn current-buffer-content []
+  "Returns content of the current buffer"
+  (let [cm (ed/->cm-ed (pool/last-active))]
+    (.getRange cm #js {:line 0 :ch 0} #js {:line (.lineCount (ed/->cm-ed (pool/last-active))) :ch 0})))
+
+(defn replace-buffer [string]
+  (when-let [ed (pool/last-active)]
+    (.replaceRange (ed/->cm-ed ed)
+                   string
+                   #js {:line 0 :ch 0}
+                   #js {:line (.lineCount (ed/->cm-ed (pool/last-active))) :ch 0})))

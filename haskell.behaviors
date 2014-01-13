@@ -5,7 +5,7 @@
 
   :editor.haskell [:lt.plugins.haskell/haskell-doc
                    :lt.plugins.haskell/haskell-reformat-file
-                   :lt.plugins.haskell/editor-reformat-file-exec
+                   :lt.plugins.haskell/editor-reformat-file-result
                    [:lt.object/add-tag :docable]
                    [:lt.object/add-tag :watchable]]
 
