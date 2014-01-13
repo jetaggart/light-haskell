@@ -15,8 +15,7 @@
             [lt.plugins.doc :as doc]
             [lt.objs.clients :as clients]
             [goog.events :as events]
-            [lt.util.load :as load]
-            [lt.util.dom :as dom])
+            [lt.util.load :as load])
 
   (:require-macros [lt.macros :refer [behavior]]))
 
@@ -50,7 +49,7 @@
     nil
     (let [location (.-location hoogle-doc)
           [_ doc-package doc-raw-module] (.exec #"http://hackage.haskell.org/packages/archive/(.+)/latest/doc/html/(.+).html" location)
-          doc-module (.replace doc-raw-module "-" ".")]
+          doc-module (if doc-raw-module (.replace doc-raw-module "-" ".") "")]
     {:name (.-self hoogle-doc)
      :ns   [:a {:href location} (str "Hoogle (" doc-package ": " doc-module ")")]
      :doc  (.-docs hoogle-doc)})))
