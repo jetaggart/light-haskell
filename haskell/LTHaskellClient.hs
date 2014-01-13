@@ -24,7 +24,9 @@ import           Data.Map                   (fromList)
 import           Data.Text                  (Text)
 
 import           GHC.Generics               (Generic)
-import           Language.Haskell.GhcMod    (checkSyntax, defaultOptions, findCradle)
+import           Language.Haskell.GhcMod    (checkSyntax, defaultOptions,
+                                             findCradle)
+
 main :: IO ()
 main = withSocketsDo $ do
     [portStr, clientIdStr] <- getArgs
