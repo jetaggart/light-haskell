@@ -133,7 +133,7 @@
                                                                :origin origin
                                                                :info info
                                                                :create try-connect})
-                                            :haskell.reformat {:code (current-buffer-content)} :only origin))))
+                                            :haskell.reformat {:data (current-buffer-content)} :only origin))))
 
 (cmd/command {:command :reformat-file
               :desc "Haskell: reformat file"
@@ -146,8 +146,8 @@
 ;; **************************************
 
 (def shell (load/node-module "shelljs"))
-;; (def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
-(def lt-haskell-path (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs"))
+(def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
+;;(def lt-haskell-path (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs"))
 
 (behavior ::on-out
           :triggers #{:proc.out}

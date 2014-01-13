@@ -28,16 +28,17 @@ loop do
   info = client.gets
   puts info
 
-  client.puts JSON.generate([456, "command", {"code" => test_code}])
+  client.puts JSON.generate([456, "haskell.reformat", {"data" => test_code}])
   info = client.gets
 
-  puts "Should succeed"
+  puts "Should succeed: reformatting"
   puts info
 
-  client.puts %{["123", "command", "hello"]}
+
+  client.puts JSON.generate([456, "haskell.syntax", {"data" => "LTHaskellClient.hs"}])
   info = client.gets
 
-  puts "Should fail"
+  puts "Should fail: should suceed syntax"
   puts info
 
   client.close
