@@ -8,6 +8,7 @@ Currently it supports:
 
 Working on:
 * ghc-mod features
+* Running a simple haskell file
 
 Requirements
 ===
