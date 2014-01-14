@@ -110,36 +110,68 @@
           :reaction haskell-inline-doc)
 
 ;; ***********************************
-;; reformat code
+;; check syntax
 ;; ***********************************
 
-(behavior ::editor-reformat-file-result
-          :triggers #{:editor.haskell.reformat.result}
+(behavior ::editor-syntax-result
+          :triggers #{:editor.haskell.syntax.result}
           :reaction (fn [editor result]
-                      (replace-buffer (:data result))))
+                      (println (result :data))))
 
-(behavior ::haskell-reformat-file
-          :triggers #{:haskell.reformat.file}
+(behavior ::haskell-syntax
+          :triggers #{:haskell.syntax}
           :reaction (fn [editor]
-                      (object/raise haskell :haskell.send.reformat.file {:origin editor})))
+                      (object/raise haskell :haskell.send.syntax {:origin editor})))
 
-(behavior ::haskell-send-reformat-file
-          :triggers #{:haskell.send.reformat.file}
+(behavior ::haskell-send-syntax
+          :triggers #{:haskell.send.syntax}
           :reaction (fn [this event]
                       (let [{:keys [info origin]} event
                                     client (-> @origin :client :default)]
                               (notifos/working "")
-                              (clients/send (eval/get-client! {:command :haskell.reformat
+                              (clients/send (eval/get-client! {:command :haskell.api.syntax
                                                                :origin origin
                                                                :info info
                                                                :create try-connect})
-                                            :haskell.reformat {:data (current-buffer-content)} :only origin))))
+                                            :haskell.api.syntax {:data (->path origin)} :only origin))))
 
-(cmd/command {:command :reformat-file
-              :desc "Haskell: reformat file"
+(cmd/command {:command :check-syntax
+              :desc "Haskell: Check syntax"
               :exec (fn []
                       (when-let [ed (pool/last-active)]
-                        (object/raise ed :haskell.reformat.file)))})
+                        (object/raise ed :haskell.syntax)))})
+
+;; ***********************************
+;; reformat code
+;; ***********************************
+
+(behavior ::editor-reformat-result
+          :triggers #{:editor.haskell.reformat.result}
+          :reaction (fn [editor result]
+                      (replace-buffer (:data result))))
+
+(behavior ::haskell-reformat
+          :triggers #{:haskell.reformat}
+          :reaction (fn [editor]
+                      (object/raise haskell :haskell.send.reformat {:origin editor})))
+
+(behavior ::haskell-send-reformat
+          :triggers #{:haskell.send.reformat}
+          :reaction (fn [this event]
+                      (let [{:keys [info origin]} event
+                                    client (-> @origin :client :default)]
+                              (notifos/working "")
+                              (clients/send (eval/get-client! {:command :haskell.api.reformat
+                                                               :origin origin
+                                                               :info info
+                                                               :create try-connect})
+                                            :haskell.api.reformat {:data (current-buffer-content)} :only origin))))
+
+(cmd/command {:command :reformat-file
+              :desc "Haskell: Reformat file"
+              :exec (fn []
+                      (when-let [ed (pool/last-active)]
+                        (object/raise ed :haskell.reformat)))})
 
 ;; **************************************
 ;; haskell client
@@ -154,9 +186,9 @@
           :reaction (fn [this data]
                       (let [out (.toString data)]
                         (object/update! this [:buffer] str out)
-                        ;;(println "********")
-                        ;;(println out)
-                        ;;(println "********")
+                        (println "********")
+                        (println out)
+                        (println "********")
                         (when (> (.indexOf out "Connected") -1)
                           (do
                             (notifos/done-working)
@@ -259,3 +291,9 @@
                    string
                    #js {:line 0 :ch 0}
                    #js {:line (.lineCount (ed/->cm-ed (pool/last-active))) :ch 0})))
+
+(defn ->path [e]
+  (or
+   (-> @e :info :path)
+   (@e :path)
+   ""))

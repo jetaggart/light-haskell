@@ -24,8 +24,8 @@ import           Data.Map                   (fromList)
 import           Data.Text                  (Text)
 
 import           GHC.Generics               (Generic)
-import           Language.Haskell.GhcMod    (checkSyntax, defaultOptions,
-                                             findCradle)
+import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
+                                             withGHC)
 
 main :: IO ()
 main = withSocketsDo $ do
@@ -35,10 +35,10 @@ main = withSocketsDo $ do
     handle <- connectTo "localhost" (PortNumber port)
     cwd <- getCurrentDirectory
 
-    hPutStrLn stdout "Connected"
+    hPutStrLn stdout $ "Connected: " ++ cwd
     hFlush stdout
 
-    sendResponse handle $ LTConnection "Haskell" "haskell" clientId cwd ["haskell.reformat"]
+    sendResponse handle $ LTConnection "Haskell" "haskell" clientId cwd ["haskell.api.reformat", "haskell.api.syntax"]
     processCommands handle
 
 
@@ -62,22 +62,25 @@ sendResponse handle = hPutStrLn handle . BS.unpack . encode
 
 execCommand :: Handle -> LTCommand -> IO ()
 
-execCommand handle (LTCommand (cId, "haskell.reformat", payload)) = do
+execCommand handle (LTCommand (cId, "haskell.api.reformat", payload)) = do
   reformattedCode <- format (ltData payload)
   sendResponse handle $ LTCommand (cId, "editor.haskell.reformat.result", LTPayload reformattedCode)
 
-execCommand handle (LTCommand (cId, "haskell.syntax", payload)) = do
+execCommand handle (LTCommand (cId, "haskell.api.syntax", payload)) = do
   syntaxIssues <- getSyntaxIssues (ltData payload)
-  sendResponse handle $ LTCommand (cId, "editor.haskell.syntax.result", LTPayload syntaxIssues)
+  sendResponse handle $ LTCommandArray (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
 
 -- API types
 
 type Client = Int
 type Command = String
 
-data LTCommand = LTCommand (Client, Command, LTPayload) deriving (Show, Generic)
+data LTCommand = LTCommand (Client, Command, LTPayload)  deriving (Show, Generic)
+data LTCommandArray = LTCommandArray (Client, Command, LTArrayPayload) deriving (Show, Generic)
 instance FromJSON LTCommand
 instance ToJSON LTCommand
+instance FromJSON LTCommandArray
+instance ToJSON LTCommandArray
 
 data LTPayload = LTPayload { ltData :: String } deriving (Show)
 instance FromJSON LTPayload where
@@ -85,6 +88,13 @@ instance FromJSON LTPayload where
 
 instance ToJSON LTPayload where
   toJSON payload = object [ "data" .= ltData payload ]
+
+data LTArrayPayload = LTArrayPayload { ltDataArray :: [String] } deriving (Show)
+instance FromJSON LTArrayPayload where
+  parseJSON (Object v) = LTArrayPayload <$> v .: "data"
+
+instance ToJSON LTArrayPayload where
+  toJSON payload = object [ "data" .= ltDataArray payload ]
 
 data LTConnection = LTConnection { cName     :: String
                                  , cType     :: String
@@ -110,7 +120,7 @@ format = readProcess "stylish-haskell" []
 
 -- ghc-mod
 
-getSyntaxIssues :: FilePath -> IO String
+getSyntaxIssues :: FilePath -> IO [String]
 getSyntaxIssues filePath = do
   cradle <- findCradle
-  checkSyntax defaultOptions cradle [filePath]
+  withGHC filePath $ check defaultOptions cradle [filePath]

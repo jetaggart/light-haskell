@@ -4,14 +4,19 @@
   :sidebar.docs.search [:lt.plugins.haskell/haskell-doc-search]
 
   :editor.haskell [:lt.plugins.haskell/haskell-doc
-                   :lt.plugins.haskell/haskell-reformat-file
-                   :lt.plugins.haskell/editor-reformat-file-result
+
+                   :lt.plugins.haskell/haskell-reformat
+                   :lt.plugins.haskell/haskell-syntax
+                   :lt.plugins.haskell/editor-reformat-result
+                   :lt.plugins.haskell/editor-syntax-result
+
                    [:lt.object/add-tag :docable]
                    [:lt.object/add-tag :watchable]]
 
   :files [(:lt.objs.files/file-types [{:name "Haskell" :exts [:hs, :lhs] :mime "text/x-haskell" :tags [:editor.haskell]} ])]
 
   :haskell.lang [:lt.plugins.haskell/connect
-                 :lt.plugins.haskell/haskell-send-reformat-file]}}
+                 :lt.plugins.haskell/haskell-send-reformat
+                 :lt.plugins.haskell/haskell-send-syntax]}}
  }
 }

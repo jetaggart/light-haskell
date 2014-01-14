@@ -38,7 +38,7 @@ loop do
   client.puts JSON.generate([456, "haskell.syntax", {"data" => "LTHaskellClient.hs"}])
   info = client.gets
 
-  puts "Should fail: should suceed syntax"
+  puts "Should succeed: syntax"
   puts info
 
   client.close
