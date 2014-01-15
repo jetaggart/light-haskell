@@ -115,7 +115,11 @@
 ;; ***********************************
 
 (defn format-syntax-error [error]
-  {:msg "some error" :loc {:line 2 :ch 0 :start-line 1}})
+  (let [split-error (.split error ":")]
+    {:msg (str (nth split-error 4) ":" (nth split-error 5))
+     :loc {:line (-> (nth split-error 1) js/parseInt dec)
+           :ch 1
+           :start-line (-> (nth split-error 1) js/parseInt dec)}}))
 
 (defn print-syntax-error [editor error]
   (let [formatted-error (format-syntax-error error)]
@@ -203,9 +207,6 @@
           :reaction (fn [this data]
                       (let [out (.toString data)]
                         (object/update! this [:buffer] str out)
-                        (println "********")
-                        (println out)
-                        (println "********")
                         (when (> (.indexOf out "Connected") -1)
                           (do
                             (notifos/done-working)
