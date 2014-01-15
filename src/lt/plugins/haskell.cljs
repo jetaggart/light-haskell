@@ -58,6 +58,7 @@
 (defn convert-results [results]
   (map convert-doc-result results))
 
+
 (defn sidebar-hoogle-response [results]
   (object/raise doc/doc-search :doc.search.results (convert-results results)))
 
@@ -113,10 +114,26 @@
 ;; check syntax
 ;; ***********************************
 
+(defn format-syntax-error [error]
+  {:msg "some error" :loc {:line 2 :ch 0 :start-line 1}})
+
+(defn print-syntax-error [editor error]
+  (let [formatted-error (format-syntax-error error)]
+    (object/raise editor :editor.exception (:msg formatted-error) (:loc formatted-error))))
+
+(defn print-syntax-errors [editor data]
+  (doseq [error data]
+    (print-syntax-error editor error)))
+
 (behavior ::editor-syntax-result
           :triggers #{:editor.haskell.syntax.result}
           :reaction (fn [editor result]
-                      (println (result :data))))
+                      (let [data (:data result)]
+                        (if (empty? data)
+                          (notifos/done-working "")
+                          (do
+                            (notifos/set-msg! "Haskell: please check inline syntax errors" {:class "error"})
+                            (print-syntax-errors editor data))))))
 
 (behavior ::haskell-syntax
           :triggers #{:haskell.syntax}
