@@ -48,10 +48,10 @@
   (if (nil? hoogle-doc)
     nil
     (let [location (.-location hoogle-doc)
-          [_ doc-package doc-raw-module] (.exec #"http://hackage.haskell.org/packages/archive/(.+)/latest/doc/html/(.+).html" location)
-          doc-module (if doc-raw-module (.replace doc-raw-module "-" ".") "")]
+          [with-mod mod-package module-name] (.exec #"http://hackage.haskell.org/packages/archive/(.+)/latest/doc/html/(.+).html" location)
+          explanation (if (nil? with-mod) "" (str " (" mod-package ": " (.replace module-name "-" ".") ")"))]
     {:name (.-self hoogle-doc)
-     :ns   [:a {:href location} (str "Hoogle (" doc-package ": " doc-module ")")]
+     :ns   [:a {:href location} (str "Hoogle" explanation)]
      :doc  (.-docs hoogle-doc)})))
 
 
