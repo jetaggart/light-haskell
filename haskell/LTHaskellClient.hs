@@ -52,7 +52,7 @@ processCommands handle = do
   processCommands handle
 
   where
-    parseCommand :: String -> Either String LTCommand
+    parseCommand :: String -> Either String (LTCommand LTPayload)
     parseCommand = eitherDecode . BS.pack
 
 sendResponse :: (ToJSON a) => Handle -> a -> IO ()
@@ -60,7 +60,7 @@ sendResponse handle = hPutStrLn handle . BS.unpack . encode
 
 -- API
 
-execCommand :: Handle -> LTCommand -> IO ()
+execCommand :: Handle -> (LTCommand LTPayload) -> IO ()
 
 execCommand handle (LTCommand (cId, "haskell.api.reformat", payload)) = do
   reformattedCode <- format (ltData payload)
@@ -68,19 +68,17 @@ execCommand handle (LTCommand (cId, "haskell.api.reformat", payload)) = do
 
 execCommand handle (LTCommand (cId, "haskell.api.syntax", payload)) = do
   syntaxIssues <- getSyntaxIssues (ltData payload)
-  sendResponse handle $ LTCommandArray (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
+  sendResponse handle $ LTCommand (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
+
 
 -- API types
 
 type Client = Int
 type Command = String
 
-data LTCommand = LTCommand (Client, Command, LTPayload)  deriving (Show, Generic)
-data LTCommandArray = LTCommandArray (Client, Command, LTArrayPayload) deriving (Show, Generic)
-instance FromJSON LTCommand
-instance ToJSON LTCommand
-instance FromJSON LTCommandArray
-instance ToJSON LTCommandArray
+data LTCommand a = LTCommand (Client, Command, a)  deriving (Show, Generic)
+instance (FromJSON a) => FromJSON (LTCommand a)
+instance (ToJSON a) => ToJSON (LTCommand a)
 
 data LTPayload = LTPayload { ltData :: String } deriving (Show)
 instance FromJSON LTPayload where
