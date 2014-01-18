@@ -15,6 +15,7 @@
             [lt.plugins.doc :as doc]
             [lt.objs.clients :as clients]
             [goog.events :as events]
+            [goog.string :as string]
             [lt.util.load :as load])
 
   (:require-macros [lt.macros :refer [behavior]]))
@@ -28,7 +29,7 @@
 (defn hoogle [query handler]
   (let [xhr (goog.net.XhrIo.)]
     (events/listen xhr "complete" (hoogle->wrap-handler handler))
-    (.send xhr (str hoogle->url query))))
+    (.send xhr (str hoogle->url (string/urlEncode query)))))
 
 (defn hoogle->parse [response]
   (-> response .getResponseJson .-results))
