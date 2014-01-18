@@ -20,32 +20,53 @@
 
   (:require-macros [lt.macros :refer [behavior]]))
 
+
 ;; **************************************
+;; API searching
+;; **************************************
+
+(defn perform-api-search [base-url query handler]
+  (let [xhr (goog.net.XhrIo.)]
+    (events/listen xhr "complete" (wrap-handler handler))
+    (.send xhr (str base-url (string/urlEncode query)))))
+
+(defn wrap-handler [handler]
+  (fn [event]
+    (let [response (.-target event)]
+      (if (.isSuccess response)
+          (handler response)
+          (notifos/done-working "Failed to connect to handler. Try again")))))
+
+;; Hayoo
+
+(def hayoo->url "http://holumbus.fh-wedel.de/hayoo/hayoo.json?query=")
+
+(defn hayoo [query handler]
+  (perform-api-search hayoo->url query handler))
+
+(defn hayoo->parse [response]
+  (-> response .getResponseJson .-functions))
+
+(defn hayoo->convert-doc [hayoo-doc]
+  (if (nil? hayoo-doc)
+    nil
+    (let [location (.-uri hayoo-doc)
+          func-name (str (.-name hayoo-doc) " :: " (.-signature hayoo-doc))]
+     {:name func-name
+     :ns [:a {:href location} (str "Hayoo(" (.-module hayoo-doc) ")")]
+     :doc (.-description hayoo-doc)})))
+
 ;; Hoogle
-;; **************************************
 
 (def hoogle->url "http://www.haskell.org/hoogle?mode=json&count=10&start=1&hoogle=")
 
 (defn hoogle [query handler]
-  (let [xhr (goog.net.XhrIo.)]
-    (events/listen xhr "complete" (hoogle->wrap-handler handler))
-    (.send xhr (str hoogle->url (string/urlEncode query)))))
+  (perform-api-search hoogle->url query handler))
 
 (defn hoogle->parse [response]
   (-> response .getResponseJson .-results))
 
-(defn hoogle->wrap-handler [handler]
-  (fn [event]
-    (let [response (.-target event)]
-      (if (.isSuccess response)
-          (handler (hoogle->parse response))
-          (notifos/done-working "Failed to connect to hoogle. Try again")))))
-
-;; **************************************
-;; Sidebar Docs
-;; **************************************
-
-(defn convert-doc-result [hoogle-doc]
+(defn hoogle->convert-doc [hoogle-doc]
   (if (nil? hoogle-doc)
     nil
     (let [location (.-location hoogle-doc)
@@ -55,10 +76,14 @@
      :ns   [:a {:href location} (str "Hoogle" explanation)]
      :doc  (.-docs hoogle-doc)})))
 
+;; **************************************
+;; Sidebar Docs
+;; **************************************
+
 
 (defn convert-results [results]
-  (map convert-doc-result results))
-
+  (let [parsed-results (hoogle->parse results)]
+   (map hoogle->convert-doc parsed-results)))
 
 (defn sidebar-hoogle-response [results]
   (object/raise doc/doc-search :doc.search.results (convert-results results)))
@@ -94,9 +119,9 @@
   (fn [results]
     (func editor results)))
 
-(defn inline-hoogle-doc [editor results]
+(defn inline-hayoo-doc [editor results]
   (let [loc (ed/->cursor editor)
-        doc (-> results first convert-doc-result)]
+        doc (-> results hayoo->parse first hayoo->convert-doc)]
     (if (nil? doc)
         (notifos/set-msg! "No docs found" {:class "error"})
         (object/raise editor :editor.doc.show! (assoc doc :loc loc)))))
@@ -105,7 +130,7 @@
   (let [token (-> editor find-symbol-at-cursor :string)]
     (if (nil? token)
         (notifos/set-msg! "No docs found" {:class "error"})
-        (hoogle token (with-editor editor inline-hoogle-doc)))))
+        (hayoo token (with-editor editor inline-hayoo-doc)))))
 
 (behavior ::haskell-doc
           :triggers #{:editor.doc}
@@ -200,8 +225,8 @@
 ;; **************************************
 
 (def shell (load/node-module "shelljs"))
-;;(def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
-(def lt-haskell-path (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs"))
+(def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
+;;(def lt-haskell-path (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs"))
 
 (behavior ::on-out
           :triggers #{:proc.out}
