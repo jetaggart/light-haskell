@@ -190,6 +190,44 @@
                         (object/raise ed :haskell.syntax)))})
 
 ;; ***********************************
+;; lint
+;; ***********************************
+
+(behavior ::editor-lint-result
+          :triggers #{:editor.haskell.lint.result}
+          :reaction (fn [editor result]
+                      (let [data (:data result)]
+                        (if (empty? data)
+                          (notifos/done-working "")
+                          (do
+                            (notifos/set-msg! "Haskell: please check inline lint errors" {:class "error"})
+                            (print-syntax-errors editor data))))))
+
+(behavior ::haskell-send-lint
+          :triggers #{:haskell.send.lint}
+          :reaction (fn [this event]
+                      (let [{:keys [info origin]} event
+                                    client (-> @origin :client :default)]
+                              (notifos/working "")
+                              (clients/send (eval/get-client! {:command :haskell.api.lint
+                                                               :origin origin
+                                                               :info info
+                                                               :create try-connect})
+                                            :haskell.api.lint {:data (->path origin)} :only origin))))
+
+(behavior ::haskell-lint
+          :triggers #{:haskell.lint}
+          :reaction (fn [editor]
+                      (object/raise haskell :haskell.send.lint {:origin editor})))
+
+
+(cmd/command {:command :check-lint
+              :desc "Haskell: Check lint"
+              :exec (fn []
+                      (when-let [ed (pool/last-active)]
+                        (object/raise ed :haskell.lint)))})
+
+;; ***********************************
 ;; reformat code
 ;; ***********************************
 

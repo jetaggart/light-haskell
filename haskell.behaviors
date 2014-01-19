@@ -7,8 +7,10 @@
 
                    :lt.plugins.haskell/haskell-reformat
                    :lt.plugins.haskell/haskell-syntax
+                   :lt.plugins.haskell/haskell-lint
                    :lt.plugins.haskell/editor-reformat-result
                    :lt.plugins.haskell/editor-syntax-result
+                   :lt.plugins.haskell/editor-lint-result
 
                    [:lt.object/add-tag :docable]
                    [:lt.object/add-tag :watchable]]
@@ -17,6 +19,7 @@
 
   :haskell.lang [:lt.plugins.haskell/connect
                  :lt.plugins.haskell/haskell-send-reformat
+                 :lt.plugins.haskell/haskell-send-lint
                  :lt.plugins.haskell/haskell-send-syntax]}}
  }
 }

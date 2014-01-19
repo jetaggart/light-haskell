@@ -23,7 +23,7 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 
 import           GHC.Generics               (Generic)
 import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
-                                             withGHC)
+                                             withGHC, lintSyntax)
 
 main :: IO ()
 main = withSocketsDo $ do
@@ -58,7 +58,7 @@ sendResponse handle = hPutStrLn handle . BS.unpack . encode
 
 -- API
 
-execCommand :: Handle -> (LTCommand LTPayload) -> IO ()
+execCommand :: Handle -> LTCommand LTPayload -> IO ()
 
 execCommand handle (LTCommand (cId, "haskell.api.reformat", payload)) = do
   reformattedCode <- format (ltData payload)
@@ -67,6 +67,10 @@ execCommand handle (LTCommand (cId, "haskell.api.reformat", payload)) = do
 execCommand handle (LTCommand (cId, "haskell.api.syntax", payload)) = do
   syntaxIssues <- getSyntaxIssues (ltData payload)
   sendResponse handle $ LTCommand (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
+
+execCommand handle (LTCommand (cId, "haskell.api.lint", payload)) = do
+  lintIssues <- getLintIssues (ltData payload)
+  sendResponse handle $ LTCommand (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
 
 
 -- API types
@@ -120,3 +124,8 @@ getSyntaxIssues :: FilePath -> IO [String]
 getSyntaxIssues filePath = do
   cradle <- findCradle
   withGHC filePath $ check defaultOptions cradle [filePath]
+
+getLintIssues :: FilePath -> IO [String]
+getLintIssues file = do
+  syntaxIssues <- lintSyntax defaultOptions file
+  return $ lines syntaxIssues
