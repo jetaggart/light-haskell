@@ -6,6 +6,7 @@ Currently it supports:
 * Hayooing inline via `ctrl-d`
 * Stylish haskell via sidebar "Haskell: Reformat file"
 * Syntax checking via sidebar "Haskell: Check syntax"
+* Linting via sidebar "Haskell: Check lint"
 
 Working on:
 * ghc-mod features
