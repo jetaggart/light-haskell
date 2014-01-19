@@ -142,7 +142,6 @@
 ;; ***********************************
 
 (defn format-syntax-error [error]
-  (println error)
   (let [split-error (.split error ":")]
     {:msg (-> (drop 3 split-error) clj-string/join (clj-string/replace #"\s+" " "))
      :loc {:line (-> (nth split-error 1) js/parseInt dec)
