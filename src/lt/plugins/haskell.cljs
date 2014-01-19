@@ -12,6 +12,7 @@
             [lt.objs.plugins :as plugins]
             [lt.objs.editor.pool :as pool]
             [lt.objs.clients.tcp :as tcp]
+            [lt.objs.tabs :as tabs]
             [lt.plugins.doc :as doc]
             [lt.objs.clients :as clients]
             [goog.events :as events]
@@ -351,7 +352,7 @@
 
 (defn send-whole-file-command [event command]
   (let [{:keys [origin]} event]
-    (send-api-command event command (->path origin))))
+    (send-api-command event command (tabs/->path origin))))
 
 (defn current-buffer-content []
   "Returns content of the current buffer"
@@ -364,9 +365,3 @@
                    string
                    #js {:line 0 :ch 0}
                    #js {:line (.lineCount (ed/->cm-ed (pool/last-active))) :ch 0})))
-
-(defn ->path [e]
-  (or
-   (-> @e :info :path)
-   (@e :path)
-   ""))
