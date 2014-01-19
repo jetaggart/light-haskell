@@ -164,20 +164,6 @@
         (notifos/set-msg! "Haskell: please check inline syntax errors" {:class "error"})
         (print-inline-errors editor data)))))
 
-(defn send-api-command [event command data]
-  (let [{:keys [info origin]} event
-        client (-> @origin :client :default)]
-    (notifos/working "")
-    (clients/send (eval/get-client! {:command command
-                                     :origin origin
-                                     :info info
-                                     :create try-connect})
-                  command {:data data} :only origin)))
-
-(defn send-whole-file-command [event command]
-  (let [{:keys [origin]} event]
-    (send-api-command event command (->path origin))))
-
 ;; check syntax
 
 (behavior ::editor-syntax-result
@@ -352,6 +338,20 @@
 ;; Util
 ;; ****************************
 
+
+(defn send-api-command [event command data]
+  (let [{:keys [info origin]} event
+        client (-> @origin :client :default)]
+    (notifos/working "")
+    (clients/send (eval/get-client! {:command command
+                                     :origin origin
+                                     :info info
+                                     :create try-connect})
+                  command {:data data} :only origin)))
+
+(defn send-whole-file-command [event command]
+  (let [{:keys [origin]} event]
+    (send-api-command event command (->path origin))))
 
 (defn current-buffer-content []
   "Returns content of the current buffer"
