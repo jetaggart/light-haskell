@@ -240,14 +240,7 @@
 (behavior ::haskell-send-reformat
           :triggers #{:haskell.send.reformat}
           :reaction (fn [this event]
-                      (let [{:keys [info origin]} event
-                                    client (-> @origin :client :default)]
-                              (notifos/working "")
-                              (clients/send (eval/get-client! {:command :haskell.api.reformat
-                                                               :origin origin
-                                                               :info info
-                                                               :create try-connect})
-                                            :haskell.api.reformat {:data (current-buffer-content)} :only origin))))
+                      (send-api-command event :haskell.api.reformat (current-buffer-content))))
 
 (cmd/command {:command :reformat-file
               :desc "Haskell: Reformat file"
