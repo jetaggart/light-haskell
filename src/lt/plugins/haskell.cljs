@@ -138,33 +138,47 @@
           :reaction haskell-inline-doc)
 
 ;; ***********************************
-;; check syntax
+;; inline errors
 ;; ***********************************
 
-(defn format-syntax-error [error]
+(defn format-inline-error [error]
   (let [split-error (.split error ":")]
     {:msg (-> (drop 3 split-error) clj-string/join (clj-string/replace #"\s+" " "))
      :loc {:line (-> (nth split-error 1) js/parseInt dec)
            :ch 1
            :start-line (-> (nth split-error 1) js/parseInt dec)}}))
 
-(defn print-syntax-error [editor error]
-  (let [formatted-error (format-syntax-error error)]
+(defn print-inline-error [editor error]
+  (let [formatted-error (format-inline-error error)]
     (object/raise editor :editor.exception (:msg formatted-error) (:loc formatted-error))))
 
-(defn print-syntax-errors [editor data]
+(defn print-inline-errors [editor data]
   (doseq [error data]
     (print-syntax-error editor error)))
 
+(defn handle-inline-errors [editor result]
+  (let [data (:data result)]
+    (if (empty? data)
+      (notifos/done-working "")
+      (do
+        (notifos/set-msg! "Haskell: please check inline syntax errors" {:class "error"})
+        (print-inline-errors editor data)))))
+
+(defn send-whole-file-command [event command]
+  (let [{:keys [info origin]} event
+        client (-> @origin :client :default)]
+    (notifos/working "")
+    (clients/send (eval/get-client! {:command command
+                                     :origin origin
+                                     :info info
+                                     :create try-connect})
+                  command {:data (->path origin)} :only origin)))
+
+;; check syntax
+
 (behavior ::editor-syntax-result
           :triggers #{:editor.haskell.syntax.result}
-          :reaction (fn [editor result]
-                      (let [data (:data result)]
-                        (if (empty? data)
-                          (notifos/done-working "")
-                          (do
-                            (notifos/set-msg! "Haskell: please check inline syntax errors" {:class "error"})
-                            (print-syntax-errors editor data))))))
+          :reaction handle-inline-errors)
 
 (behavior ::haskell-syntax
           :triggers #{:haskell.syntax}
@@ -173,15 +187,8 @@
 
 (behavior ::haskell-send-syntax
           :triggers #{:haskell.send.syntax}
-          :reaction (fn [this event]
-                      (let [{:keys [info origin]} event
-                                    client (-> @origin :client :default)]
-                              (notifos/working "")
-                              (clients/send (eval/get-client! {:command :haskell.api.syntax
-                                                               :origin origin
-                                                               :info info
-                                                               :create try-connect})
-                                            :haskell.api.syntax {:data (->path origin)} :only origin))))
+          :reaction (fn [_ event]
+                      (send-whole-file-command event :haskell.api.syntax)))
 
 (cmd/command {:command :check-syntax
               :desc "Haskell: Check syntax"
@@ -189,31 +196,16 @@
                       (when-let [ed (pool/last-active)]
                         (object/raise ed :haskell.syntax)))})
 
-;; ***********************************
 ;; lint
-;; ***********************************
 
 (behavior ::editor-lint-result
           :triggers #{:editor.haskell.lint.result}
-          :reaction (fn [editor result]
-                      (let [data (:data result)]
-                        (if (empty? data)
-                          (notifos/done-working "")
-                          (do
-                            (notifos/set-msg! "Haskell: please check inline lint errors" {:class "error"})
-                            (print-syntax-errors editor data))))))
+          :reaction handle-inline-errors)
 
 (behavior ::haskell-send-lint
           :triggers #{:haskell.send.lint}
           :reaction (fn [this event]
-                      (let [{:keys [info origin]} event
-                                    client (-> @origin :client :default)]
-                              (notifos/working "")
-                              (clients/send (eval/get-client! {:command :haskell.api.lint
-                                                               :origin origin
-                                                               :info info
-                                                               :create try-connect})
-                                            :haskell.api.lint {:data (->path origin)} :only origin))))
+                      (send-whole-file-command event :haskell.api.lint)))
 
 (behavior ::haskell-lint
           :triggers #{:haskell.lint}
@@ -362,6 +354,7 @@
 ;; ****************************
 ;; Util
 ;; ****************************
+
 
 (defn current-buffer-content []
   "Returns content of the current buffer"

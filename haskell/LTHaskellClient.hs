@@ -72,7 +72,6 @@ execCommand handle (LTCommand (cId, "haskell.api.lint", payload)) = do
   lintIssues <- getLintIssues (ltData payload)
   sendResponse handle $ LTCommand (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
 
-
 -- API types
 
 type Client = Int
