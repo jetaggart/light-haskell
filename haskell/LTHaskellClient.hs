@@ -23,7 +23,7 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 
 import           GHC.Generics               (Generic)
 import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
-                                             withGHC, lintSyntax)
+                                             lintSyntax, withGHC)
 
 main :: IO ()
 main = withSocketsDo $ do
