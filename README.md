@@ -3,7 +3,7 @@ Haskell plugin for LightTable
 
 Currently it supports:
 * Hoogling via `ctrl-shift-d`
-* Hoogling inline via `ctrl-d`
+* Hayooing inline via `ctrl-d`
 * Stylish haskell via sidebar "Haskell: Reformat file"
 * Syntax checking via sidebar "Haskell: Check syntax"
 
