@@ -12,16 +12,14 @@ import           System.IO                  (BufferMode (..), Handle,
                                              hGetContents, hGetLine, hPutStr,
                                              hPutStrLn, hSetBuffering, stderr,
                                              stdout)
-import           System.Process             (readProcess, waitForProcess)
+import           System.Process             (readProcess)
 
 import           Control.Applicative        ((<$>))
-import           Control.Exception          (throw)
+
 import           Data.Aeson                 (FromJSON (..), ToJSON (..),
                                              Value (..), eitherDecode, encode,
                                              object, (.:), (.=))
 import qualified Data.ByteString.Lazy.Char8 as BS
-import           Data.Map                   (fromList)
-import           Data.Text                  (Text)
 
 import           GHC.Generics               (Generic)
 import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,

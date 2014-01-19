@@ -16,6 +16,7 @@
             [lt.objs.clients :as clients]
             [goog.events :as events]
             [goog.string :as string]
+            [clojure.string :as clj-string]
             [lt.util.load :as load])
 
   (:require-macros [lt.macros :refer [behavior]]))
@@ -141,8 +142,9 @@
 ;; ***********************************
 
 (defn format-syntax-error [error]
+  (println error)
   (let [split-error (.split error ":")]
-    {:msg (str (nth split-error 4) ":" (nth split-error 5))
+    {:msg (-> (drop 3 split-error) clj-string/join (clj-string/replace #"\s+" " "))
      :loc {:line (-> (nth split-error 1) js/parseInt dec)
            :ch 1
            :start-line (-> (nth split-error 1) js/parseInt dec)}}))
@@ -225,8 +227,8 @@
 ;; **************************************
 
 (def shell (load/node-module "shelljs"))
-(def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
-;;(def lt-haskell-path (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs"))
+;;(def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
+(def lt-haskell-path (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs"))
 
 (behavior ::on-out
           :triggers #{:proc.out}
