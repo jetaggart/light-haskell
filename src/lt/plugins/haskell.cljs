@@ -82,7 +82,6 @@
 ;; Sidebar Docs
 ;; **************************************
 
-
 (defn convert-results [results]
   (let [parsed-results (hoogle->parse results)]
    (map hoogle->convert-doc parsed-results)))
@@ -339,7 +338,6 @@
 ;; Util
 ;; ****************************
 
-
 (defn send-api-command [event command data]
   (let [{:keys [info origin]} event
         client (-> @origin :client :default)]
@@ -365,3 +363,4 @@
                    string
                    #js {:line 0 :ch 0}
                    #js {:line (.lineCount (ed/->cm-ed (pool/last-active))) :ch 0})))
+
