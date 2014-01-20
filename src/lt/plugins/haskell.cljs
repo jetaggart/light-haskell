@@ -82,19 +82,31 @@
 ;; Sidebar Docs
 ;; **************************************
 
-(defn convert-results [results]
+(defn convert-hoogle-results [results]
   (let [parsed-results (hoogle->parse results)]
    (map hoogle->convert-doc parsed-results)))
 
-(defn sidebar-hoogle-response [results]
-  (object/raise doc/doc-search :doc.search.results (convert-results results)))
+(defn convert-hayoo-results [results]
+  (let [parsed-results (hayoo->parse results)]
+   (map hayoo->convert-doc parsed-results)))
 
-(defn haskell-doc-search-exec [query]
-  (notifos/working (str "Searching for haskell docs: " query)
+(defn sidebar-hoogle-response [results]
+  (object/raise doc/doc-search :doc.search.results (convert-hoogle-results results)))
+
+(defn sidebar-hayoo-response [results]
+  (object/raise doc/doc-search :doc.search.results (convert-hayoo-results results)))
+
+(defn haskell-doc-hoogle-exec [query]
+  (notifos/working (str "Hoogling: " query)
   (hoogle query sidebar-hoogle-response)))
 
+(defn haskell-doc-hayoo-exec [query]
+  (notifos/working (str "Hayooing: " query)
+  (hayoo query sidebar-hayoo-response)))
+
 (defn haskell-doc-search [this cur]
-  (conj cur {:label "hs" :trigger haskell-doc-search-exec :file-types #{"Haskell"}}))
+  (conj cur {:label "hsh" :trigger haskell-doc-hoogle-exec :file-types #{"Haskell"}}
+            {:label "hsy" :trigger haskell-doc-hayoo-exec :file-types #{"Haskell"}}))
 
 (behavior ::haskell-doc-search
           :triggers #{:types+}
