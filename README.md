@@ -2,7 +2,8 @@ Haskell plugin for LightTable
 ===
 
 Currently it supports:
-* Hoogling via `ctrl-shift-d`
+* Hoogling via `ctrl-shift-d` and selecting hsh (default)
+* Hayooing via `ctrl-shiff-d` and selecting hsy
 * Hayooing inline via `ctrl-d`
 * Stylish haskell via sidebar "Haskell: Reformat file"
 * Syntax checking via sidebar "Haskell: Check syntax"
