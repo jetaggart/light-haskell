@@ -26,10 +26,3 @@ For `stylish-haskell` I installed it to a global PATH:
 ```
 cabal install stylish-haskell --bindir=/usr/local/bin
 ```
-
-
-
-License
-===
-
-Licensed under the same license as LightTable
