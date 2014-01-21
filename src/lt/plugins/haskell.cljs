@@ -73,7 +73,7 @@
     nil
     (let [location (.-location hoogle-doc)
           [with-mod mod-package module-name] (.exec #"http://hackage.haskell.org/packages/archive/(.+)/latest/doc/html/(.+).html" location)
-          explanation (if (nil? with-mod) "" (str " (" mod-package ": " (.replace module-name "-" ".") ")"))]
+          explanation (if (nil? with-mod) "" (str " (" mod-package ": " (clj-string/replace module-name "-" ".") ")"))]
     {:name (.-self hoogle-doc)
      :ns   [:a {:href location} (str "Hoogle" explanation)]
      :doc  (.-docs hoogle-doc)})))
