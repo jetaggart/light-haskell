@@ -77,7 +77,7 @@
     nil
     (let [location (.-location hoogle-doc)
           [with-mod mod-package module-name] (.exec #"http://hackage.haskell.org/packages/archive/(.+)/latest/doc/html/(.+).html" location)
-          explanation (if (nil? with-mod) "" (str " (" mod-package ": " (.replace module-name "-" ".") ")"))]
+          explanation (if (nil? with-mod) "" (str " (" mod-package ": " (clj-string/replace module-name "-" ".") ")"))]
     {:name (.-self hoogle-doc)
      :ns   [:a {:href location} (str "Hoogle" explanation)]
      :doc  (.-docs hoogle-doc)})))
@@ -158,8 +158,13 @@
 ;; ***********************************
 
 (defn format-inline-error [error]
-  (let [split-error (.split error ":")]
-    {:msg (-> (drop 3 split-error) clj-string/join (clj-string/replace #"\s+" " "))
+  (let [split-error (.split error ":")
+        message-only (->> split-error
+                          (drop 3)
+                          (clj-string/join ":")
+                          clj-string/trim)
+        message (clj-string/replace message-only "\u0000" "\n")]
+    {:msg message
      :loc {:line (-> (nth split-error 1) js/parseInt dec)
            :ch 1
            :start-line (-> (nth split-error 1) js/parseInt dec)}}))
@@ -170,7 +175,7 @@
 
 (defn print-inline-errors [editor data]
   (doseq [error data]
-    (print-syntax-error editor error)))
+    (print-inline-error editor error)))
 
 (defn handle-inline-errors [editor result]
   (let [data (:data result)]
