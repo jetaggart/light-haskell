@@ -42,6 +42,12 @@ goog.require('lt.plugins.doc');
 goog.require('lt.objs.editor');
 goog.require('lt.plugins.doc');
 
+lt.plugins.haskell.shell = lt.util.load.node_module.call(null,"shelljs");
+
+lt.plugins.haskell.plugin_dir = lt.objs.plugins._STAR_plugin_dir_STAR_;
+
+lt.plugins.haskell.binary_path = lt.objs.files.join.call(null,lt.plugins.haskell.plugin_dir,"./run-server.sh");
+
 lt.plugins.haskell.perform_api_search = (function perform_api_search(base_url,query,handler){var xhr = (new goog.net.XhrIo());goog.events.listen(xhr,"complete",lt.plugins.haskell.wrap_handler.call(null,handler));
 return xhr.send([cljs.core.str(base_url),cljs.core.str(goog.string.urlEncode(query))].join(''));
 });
@@ -80,7 +86,7 @@ lt.plugins.haskell.hoogle__GT_parse = (function hoogle__GT_parse(response){retur
 lt.plugins.haskell.hoogle__GT_convert_doc = (function hoogle__GT_convert_doc(hoogle_doc){if((hoogle_doc == null))
 {return null;
 } else
-{var location = hoogle_doc.location;var vec__8770 = /http:\/\/hackage.haskell.org\/packages\/archive\/(.+)\/latest\/doc\/html\/(.+).html/.exec(location);var with_mod = cljs.core.nth.call(null,vec__8770,0,null);var mod_package = cljs.core.nth.call(null,vec__8770,1,null);var module_name = cljs.core.nth.call(null,vec__8770,2,null);var explanation = (((with_mod == null))?"":[cljs.core.str(" ("),cljs.core.str(mod_package),cljs.core.str(": "),cljs.core.str(module_name.replace("-",".")),cljs.core.str(")")].join(''));return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"name","name",1017277949),hoogle_doc.self,new cljs.core.Keyword(null,"ns","ns",1013907767),new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"a","a",1013904339),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"href","href",1017115293),location], null),[cljs.core.str("Hoogle"),cljs.core.str(explanation)].join('')], null),new cljs.core.Keyword(null,"doc","doc",1014003882),hoogle_doc.docs], null);
+{var location = hoogle_doc.location;var vec__7230 = /http:\/\/hackage.haskell.org\/packages\/archive\/(.+)\/latest\/doc\/html\/(.+).html/.exec(location);var with_mod = cljs.core.nth.call(null,vec__7230,0,null);var mod_package = cljs.core.nth.call(null,vec__7230,1,null);var module_name = cljs.core.nth.call(null,vec__7230,2,null);var explanation = (((with_mod == null))?"":[cljs.core.str(" ("),cljs.core.str(mod_package),cljs.core.str(": "),cljs.core.str(module_name.replace("-",".")),cljs.core.str(")")].join(''));return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"name","name",1017277949),hoogle_doc.self,new cljs.core.Keyword(null,"ns","ns",1013907767),new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"a","a",1013904339),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"href","href",1017115293),location], null),[cljs.core.str("Hoogle"),cljs.core.str(explanation)].join('')], null),new cljs.core.Keyword(null,"doc","doc",1014003882),hoogle_doc.docs], null);
 }
 });
 
@@ -147,45 +153,45 @@ lt.plugins.haskell.format_inline_error = (function format_inline_error(error){va
 lt.plugins.haskell.print_inline_error = (function print_inline_error(editor,error){var formatted_error = lt.plugins.haskell.format_inline_error.call(null,error);return lt.object.raise.call(null,editor,new cljs.core.Keyword(null,"editor.exception","editor.exception",3983021184),new cljs.core.Keyword(null,"msg","msg",1014012659).cljs$core$IFn$_invoke$arity$1(formatted_error),new cljs.core.Keyword(null,"loc","loc",1014011570).cljs$core$IFn$_invoke$arity$1(formatted_error));
 });
 
-lt.plugins.haskell.print_inline_errors = (function print_inline_errors(editor,data){var seq__8775 = cljs.core.seq.call(null,data);var chunk__8776 = null;var count__8777 = 0;var i__8778 = 0;while(true){
-if((i__8778 < count__8777))
-{var error = cljs.core._nth.call(null,chunk__8776,i__8778);lt.plugins.haskell.print_syntax_error.call(null,editor,error);
+lt.plugins.haskell.print_inline_errors = (function print_inline_errors(editor,data){var seq__7235 = cljs.core.seq.call(null,data);var chunk__7236 = null;var count__7237 = 0;var i__7238 = 0;while(true){
+if((i__7238 < count__7237))
+{var error = cljs.core._nth.call(null,chunk__7236,i__7238);lt.plugins.haskell.print_syntax_error.call(null,editor,error);
 {
-var G__8791 = seq__8775;
-var G__8792 = chunk__8776;
-var G__8793 = count__8777;
-var G__8794 = (i__8778 + 1);
-seq__8775 = G__8791;
-chunk__8776 = G__8792;
-count__8777 = G__8793;
-i__8778 = G__8794;
+var G__7261 = seq__7235;
+var G__7262 = chunk__7236;
+var G__7263 = count__7237;
+var G__7264 = (i__7238 + 1);
+seq__7235 = G__7261;
+chunk__7236 = G__7262;
+count__7237 = G__7263;
+i__7238 = G__7264;
 continue;
 }
 } else
-{var temp__4092__auto__ = cljs.core.seq.call(null,seq__8775);if(temp__4092__auto__)
-{var seq__8775__$1 = temp__4092__auto__;if(cljs.core.chunked_seq_QMARK_.call(null,seq__8775__$1))
-{var c__6528__auto__ = cljs.core.chunk_first.call(null,seq__8775__$1);{
-var G__8795 = cljs.core.chunk_rest.call(null,seq__8775__$1);
-var G__8796 = c__6528__auto__;
-var G__8797 = cljs.core.count.call(null,c__6528__auto__);
-var G__8798 = 0;
-seq__8775 = G__8795;
-chunk__8776 = G__8796;
-count__8777 = G__8797;
-i__8778 = G__8798;
+{var temp__4092__auto__ = cljs.core.seq.call(null,seq__7235);if(temp__4092__auto__)
+{var seq__7235__$1 = temp__4092__auto__;if(cljs.core.chunked_seq_QMARK_.call(null,seq__7235__$1))
+{var c__6528__auto__ = cljs.core.chunk_first.call(null,seq__7235__$1);{
+var G__7265 = cljs.core.chunk_rest.call(null,seq__7235__$1);
+var G__7266 = c__6528__auto__;
+var G__7267 = cljs.core.count.call(null,c__6528__auto__);
+var G__7268 = 0;
+seq__7235 = G__7265;
+chunk__7236 = G__7266;
+count__7237 = G__7267;
+i__7238 = G__7268;
 continue;
 }
 } else
-{var error = cljs.core.first.call(null,seq__8775__$1);lt.plugins.haskell.print_syntax_error.call(null,editor,error);
+{var error = cljs.core.first.call(null,seq__7235__$1);lt.plugins.haskell.print_syntax_error.call(null,editor,error);
 {
-var G__8799 = cljs.core.next.call(null,seq__8775__$1);
-var G__8800 = null;
-var G__8801 = 0;
-var G__8802 = 0;
-seq__8775 = G__8799;
-chunk__8776 = G__8800;
-count__8777 = G__8801;
-i__8778 = G__8802;
+var G__7269 = cljs.core.next.call(null,seq__7235__$1);
+var G__7270 = null;
+var G__7271 = 0;
+var G__7272 = 0;
+seq__7235 = G__7269;
+chunk__7236 = G__7270;
+count__7237 = G__7271;
+i__7238 = G__7272;
 continue;
 }
 }
@@ -258,9 +264,7 @@ lt.objs.command.command.call(null,new cljs.core.PersistentArrayMap(null, 3, [new
 }
 })], null));
 
-lt.plugins.haskell.shell = lt.util.load.node_module.call(null,"shelljs");
-
-lt.plugins.haskell.lt_haskell_path = lt.objs.files.join.call(null,lt.objs.plugins._STAR_plugin_dir_STAR_,"haskell/LTHaskellClient.hs");
+lt.plugins.haskell.lt_haskell_path = lt.objs.files.join.call(null,lt.plugins.haskell.plugin_dir,"haskell/LTHaskellClient.hs");
 
 lt.plugins.haskell.__BEH__on_out = (function __BEH__on_out(this$,data){var out = data.toString();lt.object.update_BANG_.call(null,this$,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"buffer","buffer",3930752946)], null),cljs.core.str,out);
 if((out.indexOf("Connected") > -1))
@@ -284,9 +288,9 @@ lt.object.object_STAR_.call(null,new cljs.core.Keyword("lt.plugins.haskell","con
 return null;
 }));
 
-lt.plugins.haskell.run_haskell = (function run_haskell(p__8779){var map__8781 = p__8779;var map__8781__$1 = ((cljs.core.seq_QMARK_.call(null,map__8781))?cljs.core.apply.call(null,cljs.core.hash_map,map__8781):map__8781);var info = map__8781__$1;var client = cljs.core.get.call(null,map__8781__$1,new cljs.core.Keyword(null,"client","client",3951159101));var name = cljs.core.get.call(null,map__8781__$1,new cljs.core.Keyword(null,"name","name",1017277949));var path = cljs.core.get.call(null,map__8781__$1,new cljs.core.Keyword(null,"path","path",1017337751));var obj = lt.object.create.call(null,new cljs.core.Keyword("lt.plugins.haskell","connecting-notifier","lt.plugins.haskell/connecting-notifier",4244447005),info);var client_id = lt.objs.clients.__GT_id.call(null,client);lt.object.merge_BANG_.call(null,client,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"port","port",1017351155),lt.objs.clients.tcp.port,new cljs.core.Keyword(null,"proc","proc",1017353928),obj], null));
+lt.plugins.haskell.run_haskell = (function run_haskell(p__7239){var map__7241 = p__7239;var map__7241__$1 = ((cljs.core.seq_QMARK_.call(null,map__7241))?cljs.core.apply.call(null,cljs.core.hash_map,map__7241):map__7241);var info = map__7241__$1;var client = cljs.core.get.call(null,map__7241__$1,new cljs.core.Keyword(null,"client","client",3951159101));var name = cljs.core.get.call(null,map__7241__$1,new cljs.core.Keyword(null,"name","name",1017277949));var path = cljs.core.get.call(null,map__7241__$1,new cljs.core.Keyword(null,"path","path",1017337751));var obj = lt.object.create.call(null,new cljs.core.Keyword("lt.plugins.haskell","connecting-notifier","lt.plugins.haskell/connecting-notifier",4244447005),info);var client_id = lt.objs.clients.__GT_id.call(null,client);lt.object.merge_BANG_.call(null,client,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"port","port",1017351155),lt.objs.clients.tcp.port,new cljs.core.Keyword(null,"proc","proc",1017353928),obj], null));
 lt.objs.notifos.working.call(null,"Connecting..");
-return lt.objs.proc.exec.call(null,new cljs.core.PersistentArrayMap(null, 5, [new cljs.core.Keyword(null,"command","command",1964298941),"runhaskell",new cljs.core.Keyword(null,"args","args",1016906831),new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [lt.plugins.haskell.lt_haskell_path,lt.objs.clients.tcp.port,client_id], null),new cljs.core.Keyword(null,"cwd","cwd",1014003170),lt.objs.files.parent.call(null,path),new cljs.core.Keyword(null,"env","env",1014004831),new cljs.core.PersistentArrayMap(null, 1, ["HASKELL_PATH",lt.objs.files.join.call(null,lt.objs.files.parent.call(null,path))], null),new cljs.core.Keyword(null,"obj","obj",1014014057),obj], null));
+return lt.objs.proc.exec.call(null,new cljs.core.PersistentArrayMap(null, 5, [new cljs.core.Keyword(null,"command","command",1964298941),lt.plugins.haskell.binary_path,new cljs.core.Keyword(null,"args","args",1016906831),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [lt.objs.clients.tcp.port,client_id], null),new cljs.core.Keyword(null,"cwd","cwd",1014003170),lt.plugins.haskell.plugin_dir,new cljs.core.Keyword(null,"env","env",1014004831),new cljs.core.PersistentArrayMap(null, 1, ["HASKELL_PATH",lt.objs.files.join.call(null,lt.objs.files.parent.call(null,path))], null),new cljs.core.Keyword(null,"obj","obj",1014014057),obj], null));
 });
 
 lt.plugins.haskell.check_haskell = (function check_haskell(obj){return cljs.core.assoc.call(null,obj,new cljs.core.Keyword(null,"haskell","haskell",1711527270),lt.plugins.haskell.shell.which("runhaskell"));
@@ -300,7 +304,7 @@ return lt.objs.popup.popup_BANG_.call(null,new cljs.core.PersistentArrayMap(null
 })], null),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"label","label",1116631654),"ok"], null)], null)], null));
 });
 
-lt.plugins.haskell.notify = (function notify(obj){var map__8783 = obj;var map__8783__$1 = ((cljs.core.seq_QMARK_.call(null,map__8783))?cljs.core.apply.call(null,cljs.core.hash_map,map__8783):map__8783);var client = cljs.core.get.call(null,map__8783__$1,new cljs.core.Keyword(null,"client","client",3951159101));var path = cljs.core.get.call(null,map__8783__$1,new cljs.core.Keyword(null,"path","path",1017337751));var haskell = cljs.core.get.call(null,map__8783__$1,new cljs.core.Keyword(null,"haskell","haskell",1711527270));if((cljs.core.not.call(null,haskell)) || (cljs.core.empty_QMARK_.call(null,haskell)))
+lt.plugins.haskell.notify = (function notify(obj){var map__7243 = obj;var map__7243__$1 = ((cljs.core.seq_QMARK_.call(null,map__7243))?cljs.core.apply.call(null,cljs.core.hash_map,map__7243):map__7243);var client = cljs.core.get.call(null,map__7243__$1,new cljs.core.Keyword(null,"client","client",3951159101));var path = cljs.core.get.call(null,map__7243__$1,new cljs.core.Keyword(null,"path","path",1017337751));var haskell = cljs.core.get.call(null,map__7243__$1,new cljs.core.Keyword(null,"haskell","haskell",1711527270));if((cljs.core.not.call(null,haskell)) || (cljs.core.empty_QMARK_.call(null,haskell)))
 {lt.plugins.haskell.handle_no_haskell.call(null,client);
 } else
 {if(new cljs.core.Keyword(null,"else","else",1017020587))
@@ -314,7 +318,7 @@ return obj;
 lt.plugins.haskell.check_all = (function check_all(obj){return lt.plugins.haskell.notify.call(null,lt.plugins.haskell.check_client.call(null,lt.plugins.haskell.check_haskell.call(null,obj)));
 });
 
-lt.plugins.haskell.try_connect = (function try_connect(p__8784){var map__8786 = p__8784;var map__8786__$1 = ((cljs.core.seq_QMARK_.call(null,map__8786))?cljs.core.apply.call(null,cljs.core.hash_map,map__8786):map__8786);var info = cljs.core.get.call(null,map__8786__$1,new cljs.core.Keyword(null,"info","info",1017141280));var path = new cljs.core.Keyword(null,"path","path",1017337751).cljs$core$IFn$_invoke$arity$1(info);var client = lt.objs.clients.client_BANG_.call(null,new cljs.core.Keyword(null,"haskell.client","haskell.client",4292563063));lt.plugins.haskell.check_all.call(null,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"path","path",1017337751),path,new cljs.core.Keyword(null,"client","client",3951159101),client], null));
+lt.plugins.haskell.try_connect = (function try_connect(p__7244){var map__7246 = p__7244;var map__7246__$1 = ((cljs.core.seq_QMARK_.call(null,map__7246))?cljs.core.apply.call(null,cljs.core.hash_map,map__7246):map__7246);var info = cljs.core.get.call(null,map__7246__$1,new cljs.core.Keyword(null,"info","info",1017141280));var path = new cljs.core.Keyword(null,"path","path",1017337751).cljs$core$IFn$_invoke$arity$1(info);var client = lt.objs.clients.client_BANG_.call(null,new cljs.core.Keyword(null,"haskell.client","haskell.client",4292563063));lt.plugins.haskell.check_all.call(null,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"path","path",1017337751),path,new cljs.core.Keyword(null,"client","client",3951159101),client], null));
 return client;
 });
 
@@ -329,11 +333,11 @@ lt.plugins.haskell.haskell = lt.object.create.call(null,new cljs.core.Keyword("l
 lt.objs.sidebar.clients.add_connector.call(null,new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"name","name",1017277949),"Haskell",new cljs.core.Keyword(null,"desc","desc",1016984067),"Select a directory to serve as the root of your haskell project.",new cljs.core.Keyword(null,"connect","connect",1965255772),(function (){return lt.objs.dialogs.dir.call(null,lt.plugins.haskell.haskell,new cljs.core.Keyword(null,"connect","connect",1965255772));
 })], null));
 
-lt.plugins.haskell.send_api_command = (function send_api_command(event,command,data){var map__8788 = event;var map__8788__$1 = ((cljs.core.seq_QMARK_.call(null,map__8788))?cljs.core.apply.call(null,cljs.core.hash_map,map__8788):map__8788);var origin = cljs.core.get.call(null,map__8788__$1,new cljs.core.Keyword(null,"origin","origin",4300251800));var info = cljs.core.get.call(null,map__8788__$1,new cljs.core.Keyword(null,"info","info",1017141280));var client = new cljs.core.Keyword(null,"default","default",2558708147).cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"client","client",3951159101).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null,origin)));lt.objs.notifos.working.call(null,"");
+lt.plugins.haskell.send_api_command = (function send_api_command(event,command,data){var map__7248 = event;var map__7248__$1 = ((cljs.core.seq_QMARK_.call(null,map__7248))?cljs.core.apply.call(null,cljs.core.hash_map,map__7248):map__7248);var origin = cljs.core.get.call(null,map__7248__$1,new cljs.core.Keyword(null,"origin","origin",4300251800));var info = cljs.core.get.call(null,map__7248__$1,new cljs.core.Keyword(null,"info","info",1017141280));var client = new cljs.core.Keyword(null,"default","default",2558708147).cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"client","client",3951159101).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null,origin)));lt.objs.notifos.working.call(null,"");
 return lt.objs.clients.send.call(null,lt.objs.eval.get_client_BANG_.call(null,new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"command","command",1964298941),command,new cljs.core.Keyword(null,"origin","origin",4300251800),origin,new cljs.core.Keyword(null,"info","info",1017141280),info,new cljs.core.Keyword(null,"create","create",3956577390),lt.plugins.haskell.try_connect], null)),command,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"data","data",1016980252),data], null),new cljs.core.Keyword(null,"only","only",1017320222),origin);
 });
 
-lt.plugins.haskell.send_whole_file_command = (function send_whole_file_command(event,command){var map__8790 = event;var map__8790__$1 = ((cljs.core.seq_QMARK_.call(null,map__8790))?cljs.core.apply.call(null,cljs.core.hash_map,map__8790):map__8790);var origin = cljs.core.get.call(null,map__8790__$1,new cljs.core.Keyword(null,"origin","origin",4300251800));return lt.plugins.haskell.send_api_command.call(null,event,command,lt.objs.tabs.__GT_path.call(null,origin));
+lt.plugins.haskell.send_whole_file_command = (function send_whole_file_command(event,command){var map__7250 = event;var map__7250__$1 = ((cljs.core.seq_QMARK_.call(null,map__7250))?cljs.core.apply.call(null,cljs.core.hash_map,map__7250):map__7250);var origin = cljs.core.get.call(null,map__7250__$1,new cljs.core.Keyword(null,"origin","origin",4300251800));return lt.plugins.haskell.send_api_command.call(null,event,command,lt.objs.tabs.__GT_path.call(null,origin));
 });
 
 lt.plugins.haskell.current_buffer_content = (function current_buffer_content(){var cm = lt.objs.editor.__GT_cm_ed.call(null,lt.objs.editor.pool.last_active.call(null));return cm.getRange({"ch": 0, "line": 0},{"ch": 0, "line": lt.objs.editor.__GT_cm_ed.call(null,lt.objs.editor.pool.last_active.call(null)).lineCount()});

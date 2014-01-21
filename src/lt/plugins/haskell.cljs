@@ -22,6 +22,10 @@
 
   (:require-macros [lt.macros :refer [behavior]]))
 
+(def shell (load/node-module "shelljs"))
+
+(def plugin-dir plugins/*plugin-dir*)
+(def binary-path (files/join plugin-dir "./run-server.sh"))
 
 ;; **************************************
 ;; API searching
@@ -250,9 +254,8 @@
 ;; haskell client
 ;; **************************************
 
-(def shell (load/node-module "shelljs"))
-;;(def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
-(def lt-haskell-path (files/join plugins/*plugin-dir* "haskell/LTHaskellClient.hs"))
+;; (def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
+(def lt-haskell-path (files/join plugin-dir "haskell/LTHaskellClient.hs"))
 
 (behavior ::on-out
           :triggers #{:proc.out}
@@ -290,9 +293,9 @@
     (object/merge! client {:port tcp/port
                            :proc obj})
     (notifos/working "Connecting..")
-    (proc/exec {:command "runhaskell"
-                :args [lt-haskell-path tcp/port client-id]
-                :cwd (files/parent path)
+    (proc/exec {:command binary-path
+                :args [tcp/port client-id]
+                :cwd plugin-dir
                 :env {"HASKELL_PATH" (files/join (files/parent path))}
                 :obj obj})))
 
