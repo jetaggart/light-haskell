@@ -25,7 +25,7 @@
 (def shell (load/node-module "shelljs"))
 
 (def plugin-dir plugins/*plugin-dir*)
-(def binary-path (files/join plugin-dir "dist/build/light-haskell/light-haskell"))
+(def binary-path (files/join plugin-dir "./run-server.sh"))
 
 ;; **************************************
 ;; API searching
