@@ -13,3 +13,7 @@ Working on:
 * ghc-mod features
 * Running a simple haskell file
 
+Contributing
+===
+
+This plugin is in the early stages, and can use any kind of help. The best place to start is the issues. I've marked things as `easy` that should be, well, easy. Feel free to comment on any issue asking for help/direction. 
