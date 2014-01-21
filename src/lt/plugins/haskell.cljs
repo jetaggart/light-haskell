@@ -295,7 +295,7 @@
     (notifos/working "Connecting..")
     (proc/exec {:command binary-path
                 :args [tcp/port client-id]
-                :cwd (files/parent path)
+                :cwd plugin-dir
                 :env {"HASKELL_PATH" (files/join (files/parent path))}
                 :obj obj})))
 
