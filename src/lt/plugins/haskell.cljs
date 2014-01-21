@@ -154,8 +154,13 @@
 ;; ***********************************
 
 (defn format-inline-error [error]
-  (let [split-error (.split error ":")]
-    {:msg (-> (drop 3 split-error) clj-string/join (clj-string/replace #"\s+" " "))
+  (let [split-error (.split error ":")
+        message-only (->> split-error
+                          (drop 3)
+                          (clj-string/join ":")
+                          clj-string/trim)
+        message (clj-string/replace message-only "\u0000" "\n")]
+    {:msg message
      :loc {:line (-> (nth split-error 1) js/parseInt dec)
            :ch 1
            :start-line (-> (nth split-error 1) js/parseInt dec)}}))
