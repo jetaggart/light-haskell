@@ -13,16 +13,3 @@ Working on:
 * ghc-mod features
 * Running a simple haskell file
 
-Requirements
-===
-
-This plugin currently requires:
-* the Haskell Platform
-* `aeson`
-* `stylish-haskell` as an executable on a PATH that LT can read.
-
-For `stylish-haskell` I installed it to a global PATH:
-
-```
-cabal install stylish-haskell --bindir=/usr/local/bin
-```
