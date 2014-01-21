@@ -166,7 +166,7 @@
 
 (defn print-inline-errors [editor data]
   (doseq [error data]
-    (print-syntax-error editor error)))
+    (print-inline-error editor error)))
 
 (defn handle-inline-errors [editor result]
   (let [data (:data result)]
