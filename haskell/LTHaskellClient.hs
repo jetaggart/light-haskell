@@ -1,18 +1,15 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Control.Concurrent         (forkIO)
 import           Network                    (PortID (..), connectTo,
                                              withSocketsDo)
-import           Network.Socket             (send, socketToHandle)
 import           System.Directory           (getCurrentDirectory)
 import           System.Environment         (getArgs)
-import           System.IO                  (BufferMode (..), Handle,
-                                             IOMode (..), hClose, hFlush,
-                                             hGetContents, hGetLine, hPutStr,
-                                             hPutStrLn, hSetBuffering, stderr,
+import           System.IO                  (Handle,
+                                             hFlush,
+                                             hGetLine,
+                                             hPutStrLn, stderr,
                                              stdout)
-import           System.Process             (readProcess)
 
 import           Control.Applicative        ((<$>))
 
@@ -25,15 +22,17 @@ import           GHC.Generics               (Generic)
 import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
                                              lintSyntax, withGHC)
 
+import           Language.Haskell.Stylish
+
 main :: IO ()
 main = withSocketsDo $ do
     [portStr, clientIdStr] <- getArgs
     let port = fromIntegral (read portStr :: Int)
-        clientId = (read clientIdStr :: Int)
+        clientId = read clientIdStr
     handle <- connectTo "localhost" (PortNumber port)
     cwd <- getCurrentDirectory
 
-    hPutStrLn stdout $ "Connected: " ++ cwd
+    putStrLn $ "Connected: " ++ cwd
     hFlush stdout
 
     sendResponse handle $ LTConnection "Haskell" "haskell" clientId cwd ["haskell.api.reformat", "haskell.api.syntax"]
@@ -43,8 +42,8 @@ main = withSocketsDo $ do
 processCommands :: Handle -> IO ()
 processCommands handle = do
   line <- hGetLine handle
-  case (parseCommand line) of
-    Left error -> hPutStrLn stderr ("error" ++ error)
+  case parseCommand line of
+    Left e -> hPutStrLn stderr ("Error processing command: " ++ e)
     Right ltCommand -> execCommand handle ltCommand
 
   processCommands handle
@@ -115,7 +114,17 @@ instance ToJSON LTConnection where
 -- stylish-haskell
 
 format :: String -> IO String
-format = readProcess "stylish-haskell" []
+format x = do
+  config <- loadConfig (makeVerbose False) Nothing
+  let extensions = []
+      filepath = Nothing
+      steps = configSteps config
+      result = runSteps extensions filepath steps (lines x)
+  case result of
+    Left e -> do
+      hPutStrLn stderr $ "Error while styling: " ++ e
+      return x
+    Right xs -> return (unlines xs)
 
 -- ghc-mod
 
