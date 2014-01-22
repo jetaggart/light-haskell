@@ -13,6 +13,13 @@ Working on:
 * ghc-mod features
 * Running a simple haskell file
 
+
+Requirements
+===
+
+A recent version of `cabal` that supports `cabal sandbox` and `cabal run`. This must be on a load path that LightTable can read.
+
+
 Contributing
 ===
 
