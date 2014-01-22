@@ -25,6 +25,8 @@ import           GHC.Generics               (Generic)
 import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
                                              lintSyntax, withGHC)
 
+import           Language.Haskell.Stylish
+
 main :: IO ()
 main = withSocketsDo $ do
     [portStr, clientIdStr] <- getArgs
@@ -115,7 +117,17 @@ instance ToJSON LTConnection where
 -- stylish-haskell
 
 format :: String -> IO String
-format = readProcess "stylish-haskell" []
+format x = do
+  config <- loadConfig (makeVerbose False) Nothing
+  let extensions = []
+      filepath = Nothing
+      steps = configSteps config
+      result = runSteps extensions filepath steps (lines x)
+  case result of
+    Left e -> do
+      hPutStrLn stderr $ "Error while styling: " ++ e
+      return x
+    Right xs -> return (unlines xs)
 
 -- ghc-mod
 
