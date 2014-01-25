@@ -11,15 +11,12 @@ Currently it supports:
 * Evaluating the current line or selection via `ctrl-enter` or `cmd-enter`
 * Get type of expression via sidebar "Haskell: Get the type of a form in editor"
 
-Working on:
-* ghc-mod features
-* Running a simple haskell file
-
 
 Requirements
 ===
 
 A recent version of `cabal` that supports `cabal sandbox` and `cabal run`. This must be on a load path that LightTable can read.
+
 
 Installation
 ===
