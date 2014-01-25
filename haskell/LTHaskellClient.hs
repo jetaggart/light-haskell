@@ -67,15 +67,18 @@ execCommand handle (LTCommand (cId, command, (Just payload))) = do
   where
     go cId "haskell.api.reformat" payload = do
       reformattedCode <- format (ltData payload)
-      sendResponse handle $ LTCommand (cId, "editor.haskell.reformat.result", LTPayload reformattedCode)
+      respond (cId, "editor.haskell.reformat.result", LTPayload reformattedCode)
 
     go cId "haskell.api.syntax" payload = do
       syntaxIssues <- getSyntaxIssues (ltData payload)
-      sendResponse handle $ LTCommand (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
+      respond (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
 
     go cId "haskell.api.lint" payload = do
       lintIssues <- getLintIssues (ltData payload)
-      sendResponse handle $ LTCommand (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
+      respond (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
+
+    respond :: (ToJSON a) => (Client, Command, a) -> IO ()
+    respond command = sendResponse handle $ LTCommand command
 
 -- API types
 
