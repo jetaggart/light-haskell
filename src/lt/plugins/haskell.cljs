@@ -26,7 +26,7 @@
 
 (.which shell "cabal")
 
-(def plugin-dir plugins/*plugin-dir*)
+(def plugin-dir (plugins/find-plugin "haskell"))
 (def binary-path (files/join plugin-dir "./run-server.sh"))
 
 ;; **************************************
@@ -376,7 +376,6 @@
 ;; haskell client
 ;; **************************************
 
-;; (def lt-haskell-path "/Applications/LightTable.app/Contents/Resources/app.nw/plugins/haskell/haskell/LTHaskellClient.hs") ; plugin-dir seems to be broken
 (def lt-haskell-path (files/join plugin-dir "haskell/LTHaskellClient.hs"))
 
 (behavior ::on-out
