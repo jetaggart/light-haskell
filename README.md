@@ -26,8 +26,10 @@ To use this plugin simply check it out (or symlink it) into the plugins director
 
 ```bash
 cd /Applications/LightTable.app/Contents/Resources/app.nw/plugins
-git clone git@github.com:jetaggart/light-haskell.git
+git clone git@github.com:jetaggart/light-haskell.git haskell
 ```
+
+The plugin directory must be named `haskell` due to LightTable plugin load paths.
 
 Restart LightTable, and run the command (ctrl-space) `Show plugin manager`. You should see Haskell as an installed plugin. After, simply go to a
 haskell file and start running the commands. The plugin bootstraps itself and builds the executable, so give it a minute the first time around.
