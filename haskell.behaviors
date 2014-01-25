@@ -11,6 +11,8 @@
                    :lt.plugins.haskell/editor-reformat-result
                    :lt.plugins.haskell/editor-syntax-result
                    :lt.plugins.haskell/editor-lint-result
+                   :lt.plugins.haskell/on-eval-one
+                   :lt.plugins.haskell/on-eval-type
 
                    [:lt.object/add-tag :docable]
                    [:lt.object/add-tag :watchable]]
@@ -21,5 +23,3 @@
                  :lt.plugins.haskell/haskell-send-reformat
                  :lt.plugins.haskell/haskell-send-lint
                  :lt.plugins.haskell/haskell-send-syntax]}}
- }
-}
