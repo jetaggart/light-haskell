@@ -15,7 +15,7 @@ Currently it supports:
 Requirements
 ===
 
-A recent version of `cabal` that supports `cabal sandbox` and `cabal run`. This must be on a load path that LightTable can read.
+A recent version of `cabal` that supports `sandbox`, `run`, and `repl`. This must be on a load path that LightTable can read.
 
 
 Installation
