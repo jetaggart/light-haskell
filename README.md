@@ -8,7 +8,8 @@ Currently it supports:
 * Stylish haskell via sidebar "Haskell: Reformat file"
 * Syntax checking via sidebar "Haskell: Check syntax"
 * Linting via sidebar "Haskell: Check lint"
-* Evaluating the current line or selection via sidebar "Haskell: Get the type of a form in editor"
+* Evaluating the current line or selection via `ctrl-enter` or `cmd-enter`
+* Get type of expression via sidebar "Haskell: Get the type of a form in editor"
 
 Working on:
 * ghc-mod features
