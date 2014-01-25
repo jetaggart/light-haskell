@@ -24,6 +24,8 @@
 
 (def shell (load/node-module "shelljs"))
 
+(.which shell "cabal")
+
 (def plugin-dir plugins/*plugin-dir*)
 (def binary-path (files/join plugin-dir "./run-server.sh"))
 
@@ -305,7 +307,7 @@
                 :obj obj})))
 
 (defn check-haskell [obj]
-  (assoc obj :haskell (.which shell "runhaskell")))
+  (assoc obj :haskell (.which shell "cabal")))
 
 (defn check-client [obj]
   (assoc obj :haskell-client (files/exists? lt-haskell-path)))
