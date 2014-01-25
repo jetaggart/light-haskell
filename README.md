@@ -21,6 +21,7 @@ A recent version of `cabal` that supports `cabal sandbox` and `cabal run`. This 
 
 Installation
 ===
+Pending: hopefully this will be on the central plugin list soon.
 
 To use this plugin simply check it out (or symlink it) into the plugins directory of your LightTable installation. For example, on OS X:
 
