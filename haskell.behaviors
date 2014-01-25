@@ -23,5 +23,3 @@
                  :lt.plugins.haskell/haskell-send-reformat
                  :lt.plugins.haskell/haskell-send-lint
                  :lt.plugins.haskell/haskell-send-syntax]}}
- }
-}
