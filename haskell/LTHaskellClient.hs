@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Data.Maybe                 (fromMaybe)
 import           Network                    (PortID (..), connectTo,
                                              withSocketsDo)
 import           System.Directory           (getCurrentDirectory)
@@ -14,7 +13,7 @@ import           Control.Applicative        ((<$>))
 
 import           Data.Aeson                 (FromJSON (..), ToJSON (..),
                                              Value (..), eitherDecode, encode,
-                                             object, (.:), (.:?), (.=))
+                                             object, (.:), (.=))
 import qualified Data.ByteString.Lazy.Char8 as BS
 
 import           GHC.Generics               (Generic)
@@ -62,23 +61,24 @@ execCommand handle (LTCommand (_, "client.close", Nothing)) = do
   hClose handle
   exitSuccess
 
-execCommand handle (LTCommand (cId, command, (Just payload))) = do
-  go command $ ltData payload
+execCommand handle (LTCommand (cId, command, Just ltPayload)) =
+  go command $ ltData ltPayload
+
   where
-    go "haskell.api.reformat" payload = do
-      reformattedCode <- format payload
+    go "haskell.api.reformat" payloadData = do
+      reformattedCode <- format payloadData
       respond "editor.haskell.reformat.result" $ LTPayload reformattedCode
 
-    go "haskell.api.syntax" payload = do
-      syntaxIssues <- getSyntaxIssues payload
+    go "haskell.api.syntax" payloadData = do
+      syntaxIssues <- getSyntaxIssues payloadData
       respond "editor.haskell.syntax.result" $ LTArrayPayload syntaxIssues
 
-    go "haskell.api.lint" payload = do
-      lintIssues <- getLintIssues payload
+    go "haskell.api.lint" payloadData = do
+      lintIssues <- getLintIssues payloadData
       respond "editor.haskell.lint.result" $ LTArrayPayload lintIssues
 
     respond :: (ToJSON a) => Command -> a -> IO ()
-    respond command payload = sendResponse handle $ LTCommand (cId, command, payload)
+    respond respCommand respPayload = sendResponse handle $ LTCommand (cId, respCommand, respPayload)
 
 -- API types
 
