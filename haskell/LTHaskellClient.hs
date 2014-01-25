@@ -1,21 +1,20 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import           Data.Maybe                 (fromMaybe)
 import           Network                    (PortID (..), connectTo,
                                              withSocketsDo)
 import           System.Directory           (getCurrentDirectory)
 import           System.Environment         (getArgs)
-import           System.IO                  (Handle,
-                                             hFlush,
-                                             hGetLine,
-                                             hPutStrLn, stderr,
-                                             stdout)
+import           System.Exit                (exitSuccess)
+import           System.IO                  (Handle, hClose, hFlush, hGetLine,
+                                             hPutStrLn, stderr, stdout)
 
 import           Control.Applicative        ((<$>))
 
 import           Data.Aeson                 (FromJSON (..), ToJSON (..),
                                              Value (..), eitherDecode, encode,
-                                             object, (.:), (.=))
+                                             object, (.:), (.:?), (.=))
 import qualified Data.ByteString.Lazy.Char8 as BS
 
 import           GHC.Generics               (Generic)
@@ -49,7 +48,7 @@ processCommands handle = do
   processCommands handle
 
   where
-    parseCommand :: String -> Either String (LTCommand LTPayload)
+    parseCommand :: String -> Either String (LTCommand (Maybe LTPayload))
     parseCommand = eitherDecode . BS.pack
 
 sendResponse :: (ToJSON a) => Handle -> a -> IO ()
@@ -57,17 +56,21 @@ sendResponse handle = hPutStrLn handle . BS.unpack . encode
 
 -- API
 
-execCommand :: Handle -> LTCommand LTPayload -> IO ()
+execCommand :: Handle -> LTCommand (Maybe LTPayload) -> IO ()
 
-execCommand handle (LTCommand (cId, "haskell.api.reformat", payload)) = do
+execCommand handle (LTCommand (_, "client.close", Nothing)) = do
+  hClose handle
+  exitSuccess
+
+execCommand handle (LTCommand (cId, "haskell.api.reformat", (Just payload))) = do
   reformattedCode <- format (ltData payload)
   sendResponse handle $ LTCommand (cId, "editor.haskell.reformat.result", LTPayload reformattedCode)
 
-execCommand handle (LTCommand (cId, "haskell.api.syntax", payload)) = do
+execCommand handle (LTCommand (cId, "haskell.api.syntax", (Just payload))) = do
   syntaxIssues <- getSyntaxIssues (ltData payload)
   sendResponse handle $ LTCommand (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
 
-execCommand handle (LTCommand (cId, "haskell.api.lint", payload)) = do
+execCommand handle (LTCommand (cId, "haskell.api.lint", (Just payload))) = do
   lintIssues <- getLintIssues (ltData payload)
   sendResponse handle $ LTCommand (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
 

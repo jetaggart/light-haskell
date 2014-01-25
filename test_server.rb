@@ -35,11 +35,14 @@ loop do
   puts info
 
 
-  client.puts JSON.generate([456, "haskell.api.syntax", {"data" => "LTHaskellClient.hs"}])
+  client.puts JSON.generate([456, "haskell.api.syntax", {"data" => "haskell/LTHaskellClient.hs"}])
   info = client.gets
 
   puts "Should succeed: syntax"
   puts info
 
-  client.close
+  client.puts JSON.generate([456, "client.close", nil])
+  info = client.gets
+  puts "Client should quit"
+  puts info
 end
