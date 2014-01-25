@@ -274,6 +274,7 @@
 (behavior ::on-proc-exit
           :triggers #{:proc.exit}
           :reaction (fn [this data]
+                      (notifos/set-msg! "ghci excited")
                       (object/update! this [:running] (constantly false))))
 
 (object/object* ::runner
@@ -285,7 +286,7 @@
                           (when init-fn
                             (init-fn p))
                           (object/update! this [:proc :process] (fn [_ n] n) p)
-                          (notifos/done-working (str command " started"))
+                          (notifos/set-msg! "ghci started")
                           nil)))
 
 (defn ghci-process [cb]
