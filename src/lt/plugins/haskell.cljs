@@ -367,7 +367,7 @@
                           (ghci-command ghci (str ":type " (prepare-code (:code info))))))))
 
 (cmd/command {:command :editor-type-form
-              :desc "Eval: Get the type of a form in editor"
+              :desc "Haskell: Get the type of a form in editor"
               :exec (fn []
                       (when-let [ed (pool/last-active)]
                         (object/raise ed :eval.type)))})
