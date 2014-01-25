@@ -63,17 +63,17 @@ execCommand handle (LTCommand (_, "client.close", Nothing)) = do
   exitSuccess
 
 execCommand handle (LTCommand (cId, command, (Just payload))) = do
-  go cId command payload
+  go command payload
   where
-    go cId "haskell.api.reformat" payload = do
+    go "haskell.api.reformat" payload = do
       reformattedCode <- format (ltData payload)
       respond (cId, "editor.haskell.reformat.result", LTPayload reformattedCode)
 
-    go cId "haskell.api.syntax" payload = do
+    go "haskell.api.syntax" payload = do
       syntaxIssues <- getSyntaxIssues (ltData payload)
       respond (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
 
-    go cId "haskell.api.lint" payload = do
+    go "haskell.api.lint" payload = do
       lintIssues <- getLintIssues (ltData payload)
       respond (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
 
