@@ -8,6 +8,7 @@ Currently it supports:
 * Stylish haskell via sidebar "Haskell: Reformat file"
 * Syntax checking via sidebar "Haskell: Check syntax"
 * Linting via sidebar "Haskell: Check lint"
+* Evaluating the current line or selection via `ctrl-enter`
 
 Working on:
 * ghc-mod features
