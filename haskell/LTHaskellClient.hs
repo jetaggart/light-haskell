@@ -62,17 +62,20 @@ execCommand handle (LTCommand (_, "client.close", Nothing)) = do
   hClose handle
   exitSuccess
 
-execCommand handle (LTCommand (cId, "haskell.api.reformat", (Just payload))) = do
-  reformattedCode <- format (ltData payload)
-  sendResponse handle $ LTCommand (cId, "editor.haskell.reformat.result", LTPayload reformattedCode)
+execCommand handle (LTCommand (cId, command, (Just payload))) = do
+  go cId command payload
+  where
+    go cId "haskell.api.reformat" payload = do
+      reformattedCode <- format (ltData payload)
+      sendResponse handle $ LTCommand (cId, "editor.haskell.reformat.result", LTPayload reformattedCode)
 
-execCommand handle (LTCommand (cId, "haskell.api.syntax", (Just payload))) = do
-  syntaxIssues <- getSyntaxIssues (ltData payload)
-  sendResponse handle $ LTCommand (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
+    go cId "haskell.api.syntax" payload = do
+      syntaxIssues <- getSyntaxIssues (ltData payload)
+      sendResponse handle $ LTCommand (cId, "editor.haskell.syntax.result", LTArrayPayload syntaxIssues)
 
-execCommand handle (LTCommand (cId, "haskell.api.lint", (Just payload))) = do
-  lintIssues <- getLintIssues (ltData payload)
-  sendResponse handle $ LTCommand (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
+    go cId "haskell.api.lint" payload = do
+      lintIssues <- getLintIssues (ltData payload)
+      sendResponse handle $ LTCommand (cId, "editor.haskell.lint.result", LTArrayPayload lintIssues)
 
 -- API types
 
