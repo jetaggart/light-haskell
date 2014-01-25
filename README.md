@@ -39,3 +39,12 @@ Contributing
 ===
 
 This plugin is in the early stages, and can use any kind of help. The best place to start is the issues. I've marked things as `easy` that should be, well, easy. Feel free to comment on any issue asking for help/direction.
+
+To add functionality, I usually start with testing the haskell client with the ruby server that simulates LightTable. Start by going into the plugin dir and run:
+
+```bash
+ruby test_server.rb
+./run-server.sh 5555 456
+```
+
+The ruby script will fire off various commands to the haskell client. You can check it's output to see that it succeeds (or fails). From there, I just figure out how to make LightTable send the data in the format I need it.
