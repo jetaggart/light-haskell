@@ -1,6 +1,6 @@
 module ReplSession (
   ReplSession,
-  eval,
+  evalInSession,
   startSession,
   endSession
 ) where
@@ -18,8 +18,8 @@ data ReplSession = ReplSession {
   replProcess :: ProcessHandle
 }
 
-eval :: String -> ReplSession -> IO (Either String String)
-eval input s@(ReplSession i o e _) = do
+evalInSession :: String -> ReplSession -> IO (Either String String)
+evalInSession input s@(ReplSession i o e _) = do
   clearHandle o 0
   clearHandle e 0
   sendCommand (input ++ "\n") s
