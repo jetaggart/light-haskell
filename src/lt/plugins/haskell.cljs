@@ -280,18 +280,34 @@
                 :behaviors [::on-proc-out ::on-proc-error ::on-proc-exit]
                 :running true
                 :proc {:process nil :out nil :error nil}
-                :init (fn [this command args init-fn]
-                        (let [p (proc/simple-spawn* this {:command command, :args args} nil {})]
+                :init (fn [this command args cwd init-fn]
+                        (let [p (proc/simple-spawn* this {:command command, :args args} cwd {})]
                           (when init-fn
                             (init-fn p))
                           (object/update! this [:proc :process] (fn [_ n] n) p)
-                          (notifos/done-working (str command " started"))
+                          (notifos/set-msg! (str "started " command " in " cwd))
                           nil)))
 
-(defn ghci-process [cb]
-  (let [o (object/create ::runner "ghci" []
-                         (fn [p]
-                           (.write (.-stdin p) ":set prompt \"--EvalFinished--\\n\"\n")))]
+(defn find-project-dir [file]
+  (let [roots (files/get-roots)]
+    (loop [cur (files/parent file)
+           prev ""]
+      (if (or (empty? cur)
+              (roots cur)
+              (= cur prev))
+        nil
+        (if (some #(.endsWith % ".cabal") (files/ls-sync cur))
+          cur
+          (recur (files/parent cur) cur))))))
+
+(defn init-prompt [p]
+  (.write (.-stdin p) ":set prompt \"--EvalFinished--\\n\"\n"))
+
+(defn ghci-process [file cb]
+  (let [project-dir (find-project-dir file)
+        o (if project-dir
+            (object/create ::runner "cabal" ["repl"] project-dir init-prompt)
+            (object/create ::runner "ghci" [] (files/parent file) init-prompt))]
     (add-watch o :ghci-watch (fn [_ _ old new]
                                (let [old-out (get-in old [:proc :out])
                                      new-out (get-in new [:proc :out])
@@ -338,7 +354,8 @@
 (defn get-ghci [editor]
   (let [ghci (-> @editor :haskell.client)
         ghci (if-not ghci
-               (let [ghci (ghci-process #((get-in @editor [:haskell.result-fn]) %1 %2))]
+               (let [file (-> @editor :info :path)
+                     ghci (ghci-process file #((get-in @editor [:haskell.result-fn]) %1 %2))]
                  (object/update! editor [:haskell.client] (fn [_ n] n) ghci)
                  ghci)
                ghci)]
