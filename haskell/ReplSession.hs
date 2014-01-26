@@ -18,12 +18,21 @@ data ReplSession = ReplSession {
   replProcess :: ProcessHandle
 }
 
-eval :: String -> ReplSession -> IO String
-eval input s@(ReplSession i o _ _) = do
+eval :: String -> ReplSession -> IO (Either String String)
+eval input s@(ReplSession i o e _) = do
   clearHandle o 0
+  clearHandle e 0
   sendCommand (input ++ "\n") s
+  readEvalOutput s
+
+readEvalOutput :: ReplSession -> IO (Either String String)
+readEvalOutput (ReplSession _ o e _) = do
   output <- readUntil o ("--EvalFinished\n" `isSuffixOf`)
-  return $ take (length output - length "--EvalFinished\n") output
+  let onlyOutput = take (length output - length "--EvalFinished\n") output
+  hasErrorOutput <- hReady e
+  if hasErrorOutput
+  then readAll e >>= \errorOutput -> return . Left $ errorOutput
+  else return . Right $ onlyOutput
 
 readUntil :: Handle -> (String -> Bool) -> IO String
 readUntil handle predicate = readUntil' handle "" predicate
@@ -35,6 +44,9 @@ readUntil' handle output predicate = do
   if predicate $ newOutput
   then return newOutput
   else readUntil' handle newOutput predicate
+
+readAll :: Handle -> IO String
+readAll handle = untilM' (liftM not $ hReady handle) (hGetChar handle)
 
 startSession :: FilePath -> IO ReplSession
 startSession path = do
@@ -66,11 +78,17 @@ clearHandle handle wait =
     hGetChar handle
 
 untilM :: (Monad m) => m Bool -> m a -> m ()
-untilM predicate action = do
+untilM predicate action = untilM' predicate action >> return ()
+
+untilM' :: (Monad m) => m Bool -> m a -> m [a]
+untilM' predicate action = do
   isFinished <- predicate
   if isFinished
-  then return ()
-  else action >> untilM predicate action
+  then return []
+  else do
+    res <- action
+    others <- untilM' predicate action
+    return $ res : others
 
 endSession :: ReplSession -> IO ()
 endSession r = do
