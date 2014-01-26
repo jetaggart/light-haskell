@@ -34,11 +34,20 @@ loop do
   puts "Should succeed: reformatting"
   puts info
 
-
   client.puts JSON.generate([456, "haskell.api.syntax", {"data" => "haskell/LTHaskellClient.hs"}])
   info = client.gets
 
   puts "Should succeed: syntax"
+  puts info
+
+  client.puts JSON.generate([456, "haskell.api.eval", {"data" => "1 + 2"}])
+  info = client.gets
+  puts "Should succeed: eval"
+  puts info
+
+  client.puts JSON.generate([456, "haskell.api.eval", {"data" => "putStrLn"}])
+  info = client.gets
+  puts "Should fail: eval"
   puts info
 
   client.puts JSON.generate([456, "client.close", nil])

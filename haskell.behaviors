@@ -11,7 +11,11 @@
                    :lt.plugins.haskell/editor-reformat-result
                    :lt.plugins.haskell/editor-syntax-result
                    :lt.plugins.haskell/editor-lint-result
+
                    :lt.plugins.haskell/on-eval-one
+                   :lt.plugins.haskell/haskell-success
+                   :lt.plugins.haskell/haskell-result
+                   :lt.plugins.haskell/haskell-exception
                    :lt.plugins.haskell/on-eval-type
 
                    [:lt.object/add-tag :docable]
