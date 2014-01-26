@@ -22,6 +22,8 @@ import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
 
 import           Language.Haskell.Stylish
 
+import           ReplSession
+
 main :: IO ()
 main = withSocketsDo $ do
     [portStr, clientIdStr] <- getArgs
@@ -29,22 +31,23 @@ main = withSocketsDo $ do
         clientId = read clientIdStr
     handle <- connectTo "localhost" (PortNumber port)
     cwd <- getCurrentDirectory
+    client <- startSession cwd
 
     putStrLn $ "Connected: " ++ cwd
     hFlush stdout
 
     sendResponse handle $ LTConnection "Haskell" "haskell" clientId cwd ["haskell.api.reformat", "haskell.api.syntax"]
-    processCommands handle
 
+    processCommands $ LTClientState handle client
 
-processCommands :: Handle -> IO ()
-processCommands handle = do
+processCommands :: LTClientState -> IO ()
+processCommands state@(LTClientState handle _) = do
   line <- hGetLine handle
   case parseCommand line of
     Left e -> hPutStrLn stderr ("Error processing command: " ++ e)
-    Right ltCommand -> execCommand handle ltCommand
+    Right ltCommand -> execCommand state ltCommand
 
-  processCommands handle
+  processCommands state
 
   where
     parseCommand :: String -> Either String (LTCommand (Maybe LTPayload))
@@ -55,13 +58,15 @@ sendResponse handle = hPutStrLn handle . BS.unpack . encode
 
 -- API
 
-execCommand :: Handle -> LTCommand (Maybe LTPayload) -> IO ()
+data LTClientState = LTClientState { ltHandle :: Handle, ltReplSession :: ReplSession }
 
-execCommand handle (LTCommand (_, "client.close", Nothing)) = do
-  hClose handle
+execCommand :: LTClientState -> LTCommand (Maybe LTPayload) -> IO ()
+
+execCommand state (LTCommand (_, "client.close", Nothing)) = do
+  hClose $ ltHandle state
   exitSuccess
 
-execCommand handle (LTCommand (cId, command, Just ltPayload)) =
+execCommand state (LTCommand (cId, command, Just ltPayload)) =
   go command $ ltData ltPayload
 
   where
@@ -77,8 +82,14 @@ execCommand handle (LTCommand (cId, command, Just ltPayload)) =
       lintIssues <- getLintIssues payloadData
       respond "editor.haskell.lint.result" $ LTArrayPayload lintIssues
 
+    go "haskell.api.eval" payloadData = do
+      result <- evalInSession payloadData $ ltReplSession state
+      case result of
+        Left msg -> respond "editor.eval.haskell.exception" $ LTPayload msg
+        Right msg -> respond "editor.evak.haskell.success" $ LTPayload msg
+
     respond :: (ToJSON a) => Command -> a -> IO ()
-    respond respCommand respPayload = sendResponse handle $ LTCommand (cId, respCommand, respPayload)
+    respond respCommand respPayload = sendResponse (ltHandle state) $ LTCommand (cId, respCommand, respPayload)
 
 -- API types
 
