@@ -31,8 +31,8 @@ readEvalOutput (ReplSession _ o e _) = do
   let onlyOutput = take (length output - length "--EvalFinished\n") output
   hasErrorOutput <- hReady e
   if hasErrorOutput
-  then readAll e >>= \errorOutput -> return . Left $ errorOutput
-  else return . Right $ onlyOutput
+    then readAll e >>= \errorOutput -> return . Left $ errorOutput
+    else return . Right $ onlyOutput
 
 readUntil :: Handle -> (String -> Bool) -> IO String
 readUntil handle predicate = readUntil' handle "" predicate
@@ -42,8 +42,8 @@ readUntil' handle output predicate = do
   char <- hGetChar handle
   let newOutput = output ++ [char]
   if predicate $ newOutput
-  then return newOutput
-  else readUntil' handle newOutput predicate
+    then return newOutput
+    else readUntil' handle newOutput predicate
 
 readAll :: Handle -> IO String
 readAll handle = untilM' (liftM not $ hReady handle) (hGetChar handle)
@@ -84,11 +84,11 @@ untilM' :: (Monad m) => m Bool -> m a -> m [a]
 untilM' predicate action = do
   isFinished <- predicate
   if isFinished
-  then return []
-  else do
-    res <- action
-    others <- untilM' predicate action
-    return $ res : others
+    then return []
+    else do
+      res <- action
+      others <- untilM' predicate action
+      return $ res : others
 
 endSession :: ReplSession -> IO ()
 endSession r = do
