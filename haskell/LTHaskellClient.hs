@@ -92,6 +92,13 @@ execCommand state (LTCommand (cId, command, Just ltPayload)) =
         Right msg | isBlank msg -> respond "editor.eval.haskell.success" $ LTPayload "" line
         Right msg -> respond "editor.eval.haskell.result" $ LTPayload msg line
 
+    go "haskell.api.type" payloadData = do
+      result <- evalInSession (":type " ++ payloadData) $ ltReplSession state
+      let line = ltLine ltPayload
+      case result of
+        Left msg -> respond "editor.eval.haskell.exception" $ LTPayload msg line
+        Right msg -> respond "editor.eval.haskell.result" $ LTPayload msg line
+
     respond :: (ToJSON a) => Command -> a -> IO ()
     respond respCommand respPayload = sendResponse (ltHandle state) $ LTCommand (cId, respCommand, respPayload)
 
