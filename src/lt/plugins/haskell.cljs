@@ -26,7 +26,7 @@
 
 (.which shell "cabal")
 
-(def plugin-dir (plugins/find-plugin "haskell"))
+(def plugin-dir (plugins/find-plugin "Haskell"))
 (def binary-path (files/join plugin-dir "./run-server.sh"))
 
 ;; **************************************
