@@ -261,33 +261,6 @@
 ;; evaluate code
 ;; **************************************
 
-(behavior ::on-proc-out
-          :triggers #{:proc.out}
-          :reaction (fn [this data]
-                      (object/update! this [:proc :out] str (.toString data))))
-
-(behavior ::on-proc-error
-          :triggers #{:proc.error}
-          :reaction (fn [this data]
-                      (object/update! this [:proc :error] str (.toString data))))
-
-(behavior ::on-proc-exit
-          :triggers #{:proc.exit}
-          :reaction (fn [this data]
-                      (object/update! this [:running] (constantly false))))
-
-(object/object* ::runner
-                :behaviors [::on-proc-out ::on-proc-error ::on-proc-exit]
-                :running true
-                :proc {:process nil :out nil :error nil}
-                :init (fn [this command args cwd init-fn]
-                        (let [p (proc/simple-spawn* this {:command command, :args args} cwd {})]
-                          (when init-fn
-                            (init-fn p))
-                          (object/update! this [:proc :process] (fn [_ n] n) p)
-                          (notifos/set-msg! (str "started " command " in " cwd))
-                          nil)))
-
 (defn find-project-dir [file]
   (let [roots (files/get-roots)]
     (loop [cur (files/parent file)
@@ -300,88 +273,57 @@
           cur
           (recur (files/parent cur) cur))))))
 
-(defn init-prompt [p]
-  (.write (.-stdin p) ":set prompt \"--EvalFinished--\\n\"\n"))
+(behavior ::haskell-result
+          :triggers #{:editor.eval.haskell.result}
+          :reaction (fn [editor result]
+                      (prn result)
+                      (notifos/done-working)
+                      (object/raise editor :editor.result (:data result) {:line (:line result)})))
 
-(defn ghci-process [file cb]
-  (let [project-dir (find-project-dir file)
-        o (if project-dir
-            (object/create ::runner "cabal" ["repl"] project-dir init-prompt)
-            (object/create ::runner "ghci" [] (files/parent file) init-prompt))]
-    (add-watch o :ghci-watch (fn [_ _ old new]
-                               (let [old-out (get-in old [:proc :out])
-                                     new-out (get-in new [:proc :out])
-                                     err-out (get-in new [:proc :error])]
-                                 (if (and new-out
-                                          (not= old-out new-out)
-                                          (.contains new-out "--EvalFinished--"))
-                                   (cb new-out err-out)))))
-    o))
-
-(defn ghci-command [ghci-obj command]
-  (let [stdin (.-stdin (get-in @ghci-obj [:proc :process]))]
-    (object/update! ghci-obj [:proc] (fn [p]
-                                       (assoc p :out nil :error nil)))
-    (.write stdin (str command "\n"))))
+(behavior ::haskell-exception
+          :triggers #{:editor.eval.haskell.exception}
+          :reaction (fn [editor result]
+                      (notifos/done-working)
+                      (object/raise editor :editor.exception (:data result) {:line (:line result)})))
 
 (defn selection-info [editor]
   (let [pos (ed/->cursor editor)
         info (:info @editor)
         info (if (ed/selection? editor)
                (assoc info
-                 :meta {:start (-> (ed/->cursor editor "start") :line)
-                        :end (-> (ed/->cursor editor "end") :line)}
+                 :line (-> (ed/->cursor editor "end") :line)
                  :code (ed/selection editor))
                (assoc info
-                 :pos pos
+                 :line (:line pos)
                  :code (ed/line editor (:line pos))))]
     info))
 
-(defn show-result [editor loc]
-  (fn [output error-output]
-    (let [results (clj-string/split output "--EvalFinished--\n")
-          res (peek results)
-          res (if (clj-string/blank? res)
-                "-- ok"
-                res)]
-      (if error-output
-        (object/raise editor :editor.exception error-output loc)
-        (object/raise editor :editor.result res loc)))))
-
 (defn prepare-code [code]
   (clj-string/replace code #"^(\w+)(\s+)?=" "let $1 ="))
-
-(defn get-ghci [editor]
-  (let [ghci (-> @editor :haskell.client)
-        ghci (if-not ghci
-               (let [file (-> @editor :info :path)
-                     ghci (ghci-process file #((get-in @editor [:haskell.result-fn]) %1 %2))]
-                 (object/update! editor [:haskell.client] (fn [_ n] n) ghci)
-                 ghci)
-               ghci)]
-    ghci))
 
 (behavior ::on-eval-one
           :triggers #{:eval.one}
           :reaction (fn [editor]
                       (let [info (selection-info editor)
-                            loc {:line (or (get-in info [:meta :end])
-                                           (get-in info [:pos :line]))}
-                            ghci (get-ghci editor)]
+                            data {:data (:code info)
+                                  :line (:line info)}]
                         (when-not (clj-string/blank? (:code info))
-                          (object/update! editor [:haskell.result-fn] (fn [_ n] n) (show-result editor loc))
-                          (ghci-command ghci (prepare-code (:code info)))))))
+                          (send-api-command {:info info :origin editor} :haskell.api.eval data)))))
+
+(behavior ::haskell-type
+          :triggers #{:editor.eval.haskell.type}
+          :reaction (fn [editor result]
+                      (notifos/done-working)
+                      (object/raise :editor.result (:data result) {:line (:line result)})))
 
 (behavior ::on-eval-type
           :triggers #{:eval.type}
           :reaction (fn [editor]
                       (let [info (selection-info editor)
-                            loc {:line (or (get-in info [:meta :end])
-                                           (get-in info [:pos :line]))}
-                            ghci (get-ghci editor)]
+                            data {:data (:code info)
+                                  :line (:line info)}]
                         (when-not (clj-string/blank? (:code info))
-                          (object/update! editor [:haskell.result-fn] (fn [_ n] n) (show-result editor loc))
-                          (ghci-command ghci (str ":type " (prepare-code (:code info))))))))
+                          (send-api-command {:info info :origin editor} :haskell.api.type data)))))
 
 (cmd/command {:command :editor-type-form
               :desc "Haskell: Get the type of a form in editor"
@@ -493,13 +435,14 @@
 
 (defn send-api-command [event command data]
   (let [{:keys [info origin]} event
-        client (-> @origin :client :default)]
+        client (-> @origin :client :default)
+        data (if (map? data) data {:data data})]
     (notifos/working "")
     (clients/send (eval/get-client! {:command command
                                      :origin origin
                                      :info info
                                      :create try-connect})
-                  command {:data data} :only origin)))
+                  command data :only origin)))
 
 (defn send-whole-file-command [event command]
   (let [{:keys [origin]} event]

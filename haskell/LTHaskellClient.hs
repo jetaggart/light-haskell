@@ -9,11 +9,11 @@ import           System.Exit                (exitSuccess)
 import           System.IO                  (Handle, hClose, hFlush, hGetLine,
                                              hPutStrLn, stderr, stdout)
 
-import           Control.Applicative        ((<$>))
+import           Control.Applicative        ((<$>), (<*>))
 
 import           Data.Aeson                 (FromJSON (..), ToJSON (..),
                                              Value (..), eitherDecode, encode,
-                                             object, (.:), (.=))
+                                             object, (.:), (.:?), (.=), (.!=))
 import qualified Data.ByteString.Lazy.Char8 as BS
 
 import           GHC.Generics               (Generic)
@@ -73,7 +73,7 @@ execCommand state (LTCommand (cId, command, Just ltPayload)) =
   where
     go "haskell.api.reformat" payloadData = do
       reformattedCode <- format payloadData
-      respond "editor.haskell.reformat.result" $ LTPayload reformattedCode
+      respond "editor.haskell.reformat.result" $ LTPayload reformattedCode 0
 
     go "haskell.api.syntax" payloadData = do
       syntaxIssues <- getSyntaxIssues payloadData
@@ -85,9 +85,10 @@ execCommand state (LTCommand (cId, command, Just ltPayload)) =
 
     go "haskell.api.eval" payloadData = do
       result <- evalInSession payloadData $ ltReplSession state
+      let line = ltLine ltPayload
       case result of
-        Left msg -> respond "editor.eval.haskell.exception" $ LTPayload msg
-        Right msg -> respond "editor.evak.haskell.success" $ LTPayload msg
+        Left msg -> respond "editor.eval.haskell.exception" $ LTPayload msg line
+        Right msg -> respond "editor.eval.haskell.result" $ LTPayload msg line
 
     respond :: (ToJSON a) => Command -> a -> IO ()
     respond respCommand respPayload = sendResponse (ltHandle state) $ LTCommand (cId, respCommand, respPayload)
@@ -101,12 +102,12 @@ data LTCommand a = LTCommand (Client, Command, a)  deriving (Show, Generic)
 instance (FromJSON a) => FromJSON (LTCommand a)
 instance (ToJSON a) => ToJSON (LTCommand a)
 
-data LTPayload = LTPayload { ltData :: String } deriving (Show)
+data LTPayload = LTPayload { ltData :: String, ltLine :: Int } deriving (Show)
 instance FromJSON LTPayload where
-  parseJSON (Object v) = LTPayload <$> v .: "data"
+  parseJSON (Object v) = LTPayload <$> v .: "data" <*> (v .:? "line" .!= 0)
 
 instance ToJSON LTPayload where
-  toJSON payload = object [ "data" .= ltData payload ]
+  toJSON payload = object [ "data" .= ltData payload, "line" .= ltLine payload ]
 
 data LTArrayPayload = LTArrayPayload { ltDataArray :: [String] } deriving (Show)
 instance FromJSON LTArrayPayload where
