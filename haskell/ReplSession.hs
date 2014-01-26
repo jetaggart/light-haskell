@@ -19,19 +19,19 @@ data ReplSession = ReplSession {
 }
 
 evalInSession :: String -> ReplSession -> IO (Either String String)
-evalInSession input s@(ReplSession i o e _) = do
-  clearHandle o 0
-  clearHandle e 0
-  sendCommand (input ++ "\n") s
-  readEvalOutput s
+evalInSession cmd session@(ReplSession input out err _) = do
+  clearHandle out 0
+  clearHandle err 0
+  sendCommand (cmd ++ "\n") session
+  readEvalOutput session
 
 readEvalOutput :: ReplSession -> IO (Either String String)
-readEvalOutput (ReplSession _ o e _) = do
-  output <- readUntil o ("--EvalFinished\n" `isSuffixOf`)
+readEvalOutput (ReplSession _ out err _) = do
+  output <- readUntil out ("--EvalFinished\n" `isSuffixOf`)
   let onlyOutput = take (length output - length "--EvalFinished\n") output
-  hasErrorOutput <- hReady e
+  hasErrorOutput <- hReady err
   if hasErrorOutput
-    then readAll e >>= \errorOutput -> return . Left $ errorOutput
+    then readAll err >>= \errorOutput -> return . Left $ errorOutput
     else return . Right $ onlyOutput
 
 readUntil :: Handle -> (String -> Bool) -> IO String
@@ -52,10 +52,10 @@ startSession :: FilePath -> IO ReplSession
 startSession path = do
   cabalProject <- isCabalProject path
   let (cmd, args) = if cabalProject then ("cabal", ["repl"]) else ("ghci", [])
-  (i, o, e, p) <- runInteractiveProcess cmd args (Just path) Nothing
-  let s = ReplSession i o e p
-  prepareSession s
-  return s
+  (input, out, err, process) <- runInteractiveProcess cmd args (Just path) Nothing
+  let session = ReplSession input out err process
+  prepareSession session
+  return session
 
 isCabalProject :: FilePath -> IO Bool
 isCabalProject dir = do
@@ -63,14 +63,14 @@ isCabalProject dir = do
   return $ any (".cabal" `isSuffixOf`) files
 
 prepareSession :: ReplSession -> IO ()
-prepareSession s@(ReplSession _ o _ _) = do
-  sendCommand ":set prompt \"--EvalFinished\\n\"\n" s
-  clearHandle o 1000
+prepareSession session@(ReplSession _ out _ _) = do
+  sendCommand ":set prompt \"--EvalFinished\\n\"\n" session
+  clearHandle out 1000
 
 sendCommand :: String -> ReplSession -> IO ()
-sendCommand cmd (ReplSession i _ _ _) = do
-  hPutStrLn i cmd
-  hFlush i
+sendCommand cmd (ReplSession input _ _ _) = do
+  hPutStrLn input cmd
+  hFlush input
 
 clearHandle :: Handle -> Int -> IO ()
 clearHandle handle wait =
@@ -91,7 +91,7 @@ untilM' predicate action = do
       return $ res : others
 
 endSession :: ReplSession -> IO ()
-endSession r = do
-  sendCommand ":quit\n" r
-  waitForProcess $ replProcess r
+endSession session = do
+  sendCommand ":quit\n" session
+  waitForProcess $ replProcess session
   return ()
