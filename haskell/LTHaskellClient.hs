@@ -3,7 +3,7 @@
 
 import           Network                    (PortID (..), connectTo,
                                              withSocketsDo)
-import           System.Directory           (getCurrentDirectory)
+import           System.Directory           (getCurrentDirectory, setCurrentDirectory)
 import           System.Environment         (getArgs)
 import           System.Exit                (exitSuccess)
 import           System.IO                  (Handle, hClose, hFlush, hGetLine,
@@ -30,6 +30,9 @@ main = withSocketsDo $ do
     [portStr, clientIdStr, projectDir] <- getArgs
     let port = fromIntegral (read portStr :: Int)
         clientId = read clientIdStr
+
+    setCurrentDirectory projectDir
+
     handle <- connectTo "localhost" (PortNumber port)
     client <- startSession projectDir
 
