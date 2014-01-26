@@ -27,17 +27,16 @@ import           ReplSession
 
 main :: IO ()
 main = withSocketsDo $ do
-    [portStr, clientIdStr] <- getArgs
+    [portStr, clientIdStr, projectDir] <- getArgs
     let port = fromIntegral (read portStr :: Int)
         clientId = read clientIdStr
     handle <- connectTo "localhost" (PortNumber port)
-    cwd <- getCurrentDirectory
-    client <- startSession cwd
+    client <- startSession projectDir
 
-    putStrLn $ "Connected: " ++ cwd
+    putStrLn $ "Connected: " ++ projectDir
     hFlush stdout
 
-    sendResponse handle $ LTConnection "Haskell" "haskell" clientId cwd ["haskell.api.reformat", "haskell.api.syntax"]
+    sendResponse handle $ LTConnection "Haskell" "haskell" clientId projectDir ["haskell.api.reformat", "haskell.api.syntax"]
 
     processCommands $ LTClientState handle client
 

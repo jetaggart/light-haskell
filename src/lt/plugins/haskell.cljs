@@ -371,15 +371,27 @@
                         (object/merge! this {:info info})
                         nil))
 
+(defn find-project-dir [file]
+  (let [roots (files/get-roots)]
+    (loop [cur (files/parent file)
+           prev ""]
+      (if (or (empty? cur)
+              (roots cur)
+              (= cur prev))
+        nil
+        (if (some #(.endsWith % ".cabal") (files/ls-sync cur))
+          cur
+          (recur (files/parent cur) cur))))))
 
 (defn run-haskell [{:keys [path name client] :as info}]
   (let [obj (object/create ::connecting-notifier info)
-        client-id (clients/->id client)]
+        client-id (clients/->id client)
+        project-dir (or (find-project-dir path) (files/parent path))]
     (object/merge! client {:port tcp/port
                            :proc obj})
     (notifos/working "Connecting..")
     (proc/exec {:command binary-path
-                :args [tcp/port client-id]
+                :args [tcp/port client-id project-dir]
                 :cwd plugin-dir
                 :env {"HASKELL_PATH" (files/join (files/parent path))}
                 :obj obj})))
@@ -464,4 +476,3 @@
                    string
                    #js {:line 0 :ch 0}
                    #js {:line (.lineCount (ed/->cm-ed (pool/last-active))) :ch 0})))
-
