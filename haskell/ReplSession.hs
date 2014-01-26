@@ -18,8 +18,23 @@ data ReplSession = ReplSession {
   replProcess :: ProcessHandle
 }
 
-eval :: ReplSession -> IO String
-eval _ = return ""
+eval :: String -> ReplSession -> IO String
+eval input s@(ReplSession i o _ _) = do
+  clearHandle o 0
+  sendCommand (input ++ "\n") s
+  output <- readUntil o ("--EvalFinished\n" `isSuffixOf`)
+  return $ take (length output - length "--EvalFinished\n") output
+
+readUntil :: Handle -> (String -> Bool) -> IO String
+readUntil handle predicate = readUntil' handle "" predicate
+
+readUntil' :: Handle -> String -> (String -> Bool) -> IO String
+readUntil' handle output predicate = do
+  char <- hGetChar handle
+  let newOutput = output ++ [char]
+  if predicate $ newOutput
+  then return newOutput
+  else readUntil' handle newOutput predicate
 
 startSession :: FilePath -> IO ReplSession
 startSession path = do
@@ -38,16 +53,16 @@ isCabalProject dir = do
 prepareSession :: ReplSession -> IO ()
 prepareSession s@(ReplSession _ o _ _) = do
   sendCommand ":set prompt \"--EvalFinished\\n\"\n" s
-  clearHandle o
+  clearHandle o 1000
 
 sendCommand :: String -> ReplSession -> IO ()
 sendCommand cmd (ReplSession i _ _ _) = do
   hPutStrLn i cmd
   hFlush i
 
-clearHandle :: Handle -> IO ()
-clearHandle handle =
-  untilM (liftM not $ hWaitForInput handle 1000) $ do
+clearHandle :: Handle -> Int -> IO ()
+clearHandle handle wait =
+  untilM (liftM not $ hWaitForInput handle wait) $ do
     hGetChar handle
 
 untilM :: (Monad m) => m Bool -> m a -> m ()
