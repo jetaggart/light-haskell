@@ -64,6 +64,7 @@ execCommand :: LTClientState -> LTCommand (Maybe LTPayload) -> IO ()
 
 execCommand state (LTCommand (_, "client.close", Nothing)) = do
   hClose $ ltHandle state
+  endSession $ ltReplSession state
   exitSuccess
 
 execCommand state (LTCommand (cId, command, Just ltPayload)) =
