@@ -22,6 +22,7 @@ import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
 
 import           Language.Haskell.Stylish
 
+import           Data.Char                  (isSpace)
 import           ReplSession
 
 main :: IO ()
@@ -88,10 +89,14 @@ execCommand state (LTCommand (cId, command, Just ltPayload)) =
       let line = ltLine ltPayload
       case result of
         Left msg -> respond "editor.eval.haskell.exception" $ LTPayload msg line
+        Right msg | isBlank msg -> respond "editor.eval.haskell.success" $ LTPayload "" line
         Right msg -> respond "editor.eval.haskell.result" $ LTPayload msg line
 
     respond :: (ToJSON a) => Command -> a -> IO ()
     respond respCommand respPayload = sendResponse (ltHandle state) $ LTCommand (cId, respCommand, respPayload)
+
+isBlank :: String -> Bool
+isBlank = all isSpace
 
 -- API types
 

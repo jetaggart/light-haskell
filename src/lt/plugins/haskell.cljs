@@ -273,10 +273,15 @@
           cur
           (recur (files/parent cur) cur))))))
 
+(behavior ::haskell-success
+          :triggers #{:editor.eval.haskell.success}
+          :reaction (fn [editor result]
+                      (notifos/done-working)
+                      (object/raise editor :editor.result "✓" {:line (:line result)})))
+
 (behavior ::haskell-result
           :triggers #{:editor.eval.haskell.result}
           :reaction (fn [editor result]
-                      (prn result)
                       (notifos/done-working)
                       (object/raise editor :editor.result (:data result) {:line (:line result)})))
 
