@@ -261,18 +261,6 @@
 ;; evaluate code
 ;; **************************************
 
-(defn find-project-dir [file]
-  (let [roots (files/get-roots)]
-    (loop [cur (files/parent file)
-           prev ""]
-      (if (or (empty? cur)
-              (roots cur)
-              (= cur prev))
-        nil
-        (if (some #(.endsWith % ".cabal") (files/ls-sync cur))
-          cur
-          (recur (files/parent cur) cur))))))
-
 (behavior ::haskell-success
           :triggers #{:editor.eval.haskell.success}
           :reaction (fn [editor result]
