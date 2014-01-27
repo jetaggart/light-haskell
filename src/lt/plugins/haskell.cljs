@@ -298,7 +298,7 @@
           :triggers #{:eval.one}
           :reaction (fn [editor]
                       (let [info (selection-info editor)
-                            data {:data (:code info)
+                            data {:data (prepare-code (:code info))
                                   :line (:line info)}]
                         (when-not (clj-string/blank? (:code info))
                           (send-api-command {:info info :origin editor} :haskell.api.eval data)))))
