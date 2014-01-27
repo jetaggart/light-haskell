@@ -294,6 +294,10 @@
 (defn prepare-code [code]
   (clj-string/replace code #"^(\w+)(\s+)?=" "let $1 ="))
 
+(defn clear-result [editor line]
+  (when-let [result (get (@editor :widgets) [(ed/line-handle editor line) :inline])]
+    (object/raise result :clear!)))
+
 (behavior ::on-eval-one
           :triggers #{:eval.one}
           :reaction (fn [editor]
@@ -301,6 +305,7 @@
                             data {:data (prepare-code (:code info))
                                   :line (:line info)}]
                         (when-not (clj-string/blank? (:code info))
+                          (clear-result editor (:line info))
                           (send-api-command {:info info :origin editor} :haskell.api.eval data)))))
 
 (behavior ::haskell-type
@@ -316,6 +321,7 @@
                             data {:data (:code info)
                                   :line (:line info)}]
                         (when-not (clj-string/blank? (:code info))
+                          (clear-result editor (:line info))
                           (send-api-command {:info info :origin editor} :haskell.api.type data)))))
 
 (cmd/command {:command :editor-type-form
