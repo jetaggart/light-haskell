@@ -35,6 +35,7 @@ prepareCode code = case parseCode code of
            else code
 
 isFunDecl :: Decl -> Bool
+isFunDecl (TypeSig {}) = True
 isFunDecl (FunBind {}) = True
 isFunDecl (PatBind {}) = True
 isFunDecl _ = False
