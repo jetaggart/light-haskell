@@ -296,9 +296,6 @@
                  :code (ed/line editor (:line pos))))]
     info))
 
-(defn prepare-code [code]
-  (clj-string/replace code #"^(\w+)(\s+)?=" "let $1 ="))
-
 (defn clear-result [editor line]
   (when-let [result (get (@editor :widgets) [(ed/line-handle editor line) :inline])]
     (object/raise result :clear!)))
@@ -307,7 +304,7 @@
           :triggers #{:eval.one}
           :reaction (fn [editor]
                       (let [info (selection-info editor)
-                            data {:data (prepare-code (:code info))
+                            data {:data (:code info)
                                   :line (:line info)}]
                         (when-not (clj-string/blank? (:code info))
                           (clear-result editor (:line info))

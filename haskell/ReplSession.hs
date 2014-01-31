@@ -10,6 +10,7 @@ import System.Process
 import System.Directory (getDirectoryContents)
 import Data.List (isSuffixOf)
 import Control.Monad (liftM)
+import Language.Haskell.Exts
 
 data ReplSession = ReplSession {
   replIn :: Handle,
@@ -20,11 +21,31 @@ data ReplSession = ReplSession {
 
 evalInSession :: String -> ReplSession -> IO (Either String String)
 evalInSession cmd session@(ReplSession input out err _) = do
-  sendCommand (":{\n" ++ cmd ++ "\n") session
+  sendCommand (":{\n" ++ prepareCode cmd ++ "\n") session
   clearHandle out 10
   clearHandle err 0
   sendCommand ":}\n" session
   readEvalOutput session
+
+prepareCode :: String -> String
+prepareCode code = case parseCode code of
+  [] -> code
+  decls -> if isFunDecl $ head decls
+           then prependLet decls
+           else code
+
+isFunDecl :: Decl -> Bool
+isFunDecl (FunBind {}) = True
+isFunDecl (PatBind {}) = True
+isFunDecl _ = False
+
+prependLet :: [Decl] -> String
+prependLet = prettyPrint . letStmt
+
+parseCode :: String -> [Decl]
+parseCode code = case parseFileContents code of
+  (ParseOk (Module _ _ _ _ _ _ decls)) -> decls
+  (ParseFailed {}) -> []
 
 readEvalOutput :: ReplSession -> IO (Either String String)
 readEvalOutput (ReplSession _ out err _) = do
