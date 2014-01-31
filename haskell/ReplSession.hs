@@ -20,9 +20,10 @@ data ReplSession = ReplSession {
 
 evalInSession :: String -> ReplSession -> IO (Either String String)
 evalInSession cmd session@(ReplSession input out err _) = do
-  clearHandle out 0
+  sendCommand (":{\n" ++ cmd ++ "\n") session
+  clearHandle out 10
   clearHandle err 0
-  sendCommand (cmd ++ "\n") session
+  sendCommand ":}\n" session
   readEvalOutput session
 
 readEvalOutput :: ReplSession -> IO (Either String String)
