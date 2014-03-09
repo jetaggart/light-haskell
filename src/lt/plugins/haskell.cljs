@@ -138,9 +138,9 @@
   (fn [results]
     (func editor results)))
 
-(defn inline-hayoo-doc [editor results]
+(defn inline-hoogle-doc [editor results]
   (let [loc (ed/->cursor editor)
-        doc (-> results hayoo->parse first hayoo->convert-doc)]
+        doc (-> results hoogle->parse first hoogle->convert-doc)]
     (if (nil? doc)
         (notifos/set-msg! "No docs found" {:class "error"})
         (object/raise editor :editor.doc.show! (assoc doc :loc loc)))))
@@ -149,7 +149,7 @@
   (let [token (-> editor find-symbol-at-cursor :string)]
     (if (nil? token)
         (notifos/set-msg! "No docs found" {:class "error"})
-        (hayoo token (with-editor editor inline-hayoo-doc)))))
+        (hoogle token (with-editor editor inline-hoogle-doc)))))
 
 (behavior ::haskell-doc
           :triggers #{:editor.doc}
