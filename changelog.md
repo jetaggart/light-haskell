@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.6
+
+* [windows support](https://github.com/jetaggart/light-haskell/pull/41),
+    thanks to @remco138
+
 ## 0.2.5
 
 * support evaluating top-level assignments again
