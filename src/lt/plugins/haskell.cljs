@@ -27,7 +27,10 @@
 (.which shell "cabal")
 
 (def plugin-dir (plugins/find-plugin "Haskell"))
-(def binary-path (files/join plugin-dir "./run-server.sh"))
+;platform hack, windows does not like bash nor the ./ prefix
+(def binary-path (files/join plugin-dir
+                             (if (= platform/platform :windows) "run-server.bat"
+                                                                "./run-server.sh")))
 
 ;; **************************************
 ;; API searching
