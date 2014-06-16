@@ -164,7 +164,8 @@
 ;; ***********************************
 
 (defn format-inline-error [error]
-  (let [split-error (.split error ":")
+  (let [error-unified (clj-string/replace error ":\\" "_\\")
+        split-error (.split error-unified ":")
         message-only (->> split-error
                           (drop 3)
                           (clj-string/join ":")
