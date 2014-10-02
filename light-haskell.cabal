@@ -51,7 +51,7 @@ executable light-haskell
 
   -- Other library packages from which modules are imported.
   build-depends:
-    base ==4.7.*,
+    base (>=4.0 && <5),
     network ==2.5.*,
     directory ==1.2.*,
     containers ==0.5.*,
