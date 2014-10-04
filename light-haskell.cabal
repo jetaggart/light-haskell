@@ -52,14 +52,14 @@ executable light-haskell
   -- Other library packages from which modules are imported.
   build-depends:
     base (>=4.0 && <5),
-    network ==2.5.*,
+    network >=2.4,
     directory ==1.2.*,
     containers ==0.5.*,
     text ==1.1.*,
     bytestring ==0.10.*,
     aeson ==0.7.*,
-    process ==1.2.*,
-    ghc-mod ==5.1.*,
+    process >=1.1,
+    ghc-mod >=5.1,
     stylish-haskell ==0.5.*
 
   -- Directories containing source files.
