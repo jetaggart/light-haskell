@@ -18,7 +18,7 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 
 import           GHC.Generics               (Generic)
 import           Language.Haskell.GhcMod    (check, defaultOptions, findCradle,
-                                             lintSyntax, withGHC)
+                                             lint, runGhcModT)
 
 import           Language.Haskell.Stylish
 
@@ -166,10 +166,10 @@ format x = do
 
 getSyntaxIssues :: FilePath -> IO [String]
 getSyntaxIssues filePath = do
-  cradle <- findCradle
-  withGHC filePath $ check defaultOptions cradle [filePath]
+  (Right result, _) <- runGhcModT defaultOptions $ check [filePath]
+  return $ either (:[]) lines result
 
 getLintIssues :: FilePath -> IO [String]
 getLintIssues file = do
-  syntaxIssues <- lintSyntax defaultOptions file
-  return $ lines syntaxIssues
+  (Right lintIssues, _) <- runGhcModT defaultOptions $ lint file
+  return $ lines lintIssues
