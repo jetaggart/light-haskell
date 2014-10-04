@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.7
+
+* support for both GHC 7.6 and 7.8 (#48), thanks to @elfenlaid
+* use [travis](http://travis-ci.org/psylinse/light-haskell)
+
 ## 0.2.6
 
 * [windows support](https://github.com/jetaggart/light-haskell/pull/41),

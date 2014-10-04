@@ -1,5 +1,5 @@
 {"name": "Haskell",
- "version": "0.2.6",
+ "version": "0.2.7",
  "author": "Jeff Taggart, Lucas Stadler, Ben Kirwin",
  "source": "https://github.com/jetaggart/light-haskell",
  "desc": "Haskell integration for LightTable",
