@@ -1,6 +1,6 @@
 {"name": "Haskell",
  "version": "0.2.7",
  "author": "Jeff Taggart, Lucas Stadler, Ben Kirwin",
- "source": "https://github.com/jetaggart/light-haskell",
+ "source": "https://github.com/psylinse/light-haskell",
  "desc": "Haskell integration for LightTable",
  "behaviors": "haskell.behaviors"}
