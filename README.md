@@ -1,11 +1,7 @@
 Haskell plugin for LightTable
 ===
 
-**Status**: Contributions **welcome**! There's a lot of stuff missing/incomplete
-so you're welcome to work on things. We'll help you along the way.
-(However, you might want to have a look at [Chris' blog post](http://www.chris-granger.com/2014/10/01/beyond-light-table/)
-about his new project and the related discussions before you dive in too
-deeply.)
+**Status**: Due to the lack of progress on LightTable, I'm no longer maintaining this plugin. Feel free to fork if you'd like to continue work.
 
 Currently it supports:
 * Hoogling via `ctrl-shift-d` and selecting hsh (default)
